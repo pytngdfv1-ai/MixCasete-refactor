@@ -10,9 +10,8 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.SystemClock;
 import android.provider.MediaStore;
-import android.view.MotionEvent;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -52,9 +51,6 @@ public class MainActivity extends Activity {
     private FrameLayout rootLayout;
     private android.widget.TextView videoCloseBtn;
 
-    private boolean polling = false;
-    private int noVideoCount = 0;
-    private boolean triedAlt = false;
     private String lastId = null;
     private boolean npInit = false;
     private String pendingExport = null;
@@ -83,9 +79,10 @@ public class MainActivity extends Activity {
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
+        // WebView SOLO para ver el video (mudo). El audio lo pone PlaybackService.
         playerWv = new WebView(this);
         config(playerWv.getSettings());
-        playerWv.setWebViewClient(new PlayerClient());
+        playerWv.setWebViewClient(new WebViewClient());
         playerWv.setWebChromeClient(new WebChromeClient());
         root.addView(playerWv, new FrameLayout.LayoutParams(1, 1));
         playerWv.setAlpha(0f);
@@ -93,7 +90,6 @@ public class MainActivity extends Activity {
         setContentView(root);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
-        /* Limpia respaldos duplicados de la playlist al abrir (una sola vez en fondo) */
         new Thread(() -> cleanupDuplicateBackups()).start();
 
         requestNotifPermission();
@@ -101,9 +97,6 @@ public class MainActivity extends Activity {
         wv.loadUrl("file:///android_asset/index.html");
     }
 
-    /** Desde Android 13 (API 33) hay que pedir este permiso en tiempo de
-     *  ejecución o la notificación de reproducción (y sus controles en
-     *  pantalla de bloqueo) nunca se muestra, aunque esté en el manifiesto. */
     private void requestNotifPermission() {
         if (Build.VERSION.SDK_INT >= 33) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS)
@@ -182,14 +175,17 @@ public class MainActivity extends Activity {
         public void showVideoOverlay(final String id) {
             runOnUiThread(() -> {
                 try {
+                    lastId = id;
                     android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
                     int size = (int) (Math.min(dm.widthPixels, dm.heightPixels) * 0.92f);
                     FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(size, size);
                     lp.gravity = android.view.Gravity.CENTER;
                     playerWv.setLayoutParams(lp);
                     playerWv.setAlpha(1f);
-                    playerWv.loadUrl("https://www.youtube.com/watch?v=" + id
-                            + "&playsinline=1");
+
+                    // mute=1 + rel=0: sin audio, sin recomendaciones
+                    playerWv.loadUrl("https://www.youtube.com/embed/" + id
+                            + "?autoplay=1&playsinline=1&rel=0&mute=1&controls=1");
 
                     if (videoCloseBtn == null) {
                         videoCloseBtn = new android.widget.TextView(MainActivity.this);
@@ -211,7 +207,7 @@ public class MainActivity extends Activity {
                         clp.topMargin = margin; clp.rightMargin = margin;
                         rootLayout.addView(videoCloseBtn, clp);
                     }
-                    videoCloseBtn.setVisibility(android.view.View.VISIBLE);
+                    videoCloseBtn.setVisibility(View.VISIBLE);
                 } catch (Exception e) {}
             });
         }
@@ -220,11 +216,14 @@ public class MainActivity extends Activity {
         public void hideVideoOverlay() {
             runOnUiThread(() -> {
                 try {
-                    stopPoll();
+                    // Descartar el WebView completamente: libera foco de audio
+                    // y cualquier sesión de medios interna de YouTube.
                     playerWv.loadUrl("about:blank");
+                    playerWv.clearHistory();
+                    playerWv.clearCache(false);
                     playerWv.setAlpha(0f);
                     playerWv.setLayoutParams(new FrameLayout.LayoutParams(1, 1));
-                    if (videoCloseBtn != null) videoCloseBtn.setVisibility(android.view.View.GONE);
+                    if (videoCloseBtn != null) videoCloseBtn.setVisibility(View.GONE);
                 } catch (Exception e) {}
             });
         }
@@ -232,16 +231,14 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void playYT(final String id) {
             lastId = id;
-            noVideoCount = 0;
-            triedAlt = false;
             runOnUiThread(() -> playerWv.loadUrl(
-                    "https://www.youtube.com/watch?v=" + id + "&playsinline=1"));
+                    "https://www.youtube.com/embed/" + id + "?autoplay=1&playsinline=1&rel=0&mute=1"));
         }
-        @JavascriptInterface public void resumeYT() { runOnUiThread(() -> { tap(); enforce(); }); }
-        @JavascriptInterface public void pauseYT() { js("(function(){var v=document.querySelector('video');if(v)v.pause();})();"); }
-        @JavascriptInterface public void stopYT()  { runOnUiThread(() -> { polling = false; playerWv.loadUrl("about:blank"); }); }
-        @JavascriptInterface public void seekYT(final int sec) { js("(function(){var v=document.querySelector('video');if(v)v.currentTime=" + sec + ";})();"); }
-        @JavascriptInterface public void unmuteYT() { runOnUiThread(() -> { tap(); enforce(); tap(); enforce(); }); }
+        @JavascriptInterface public void resumeYT() { /* ya no aplica: audio lo lleva el servicio */ }
+        @JavascriptInterface public void pauseYT()   { /* ya no aplica: audio lo lleva el servicio */ }
+        @JavascriptInterface public void stopYT()    { runOnUiThread(() -> playerWv.loadUrl("about:blank")); }
+        @JavascriptInterface public void seekYT(int sec) { /* ya no aplica: audio lo lleva el servicio */ }
+        @JavascriptInterface public void unmuteYT()  { /* ya no aplica: el video siempre va mudo */ }
 
         @JavascriptInterface
         public void getStream(final String id) {
@@ -367,7 +364,6 @@ public class MainActivity extends Activity {
 
     /* ============ RESPALDO ÚNICO DE PLAYLIST ============ */
 
-    /* Busca TODOS los respaldos existentes (MixCasete_playlist*.json) */
     private List<Uri> findAllPlaylistUris() {
         List<Uri> out = new ArrayList<>();
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return out;
@@ -388,7 +384,6 @@ public class MainActivity extends Activity {
         return out;
     }
 
-    /* Borra duplicados: conserva un solo archivo */
     private void cleanupDuplicateBackups() {
         try {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return;
@@ -399,7 +394,6 @@ public class MainActivity extends Activity {
         } catch (Exception e) {}
     }
 
-    /* Escribe SIEMPRE sobre el mismo archivo (crea solo si no existe) */
     private boolean writePlaylistToDownloads(String json) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -408,7 +402,6 @@ public class MainActivity extends Activity {
                 Uri target = null;
                 if (!existing.isEmpty()) {
                     target = existing.get(0);
-                    /* elimina duplicados si los hubiera */
                     for (int i = 1; i < existing.size(); i++) {
                         try { cr.delete(existing.get(i), null, null); } catch (Exception e) {}
                     }
@@ -421,7 +414,6 @@ public class MainActivity extends Activity {
                     target = cr.insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI, cv);
                 }
                 if (target == null) return false;
-                /* "wt" = trunca y sobrescribe el mismo archivo */
                 OutputStream os = cr.openOutputStream(target, "wt");
                 os.write(json.getBytes("UTF-8"));
                 os.close();
@@ -437,7 +429,6 @@ public class MainActivity extends Activity {
         } catch (Exception e) { return false; }
     }
 
-    /* Guarda un archivo binario (ej. PDF) en Descargas, decodificado desde base64. */
     private boolean writeBytesToDownloads(String base64Data, String fileName) {
         try {
             byte[] data = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT);
@@ -665,105 +656,6 @@ public class MainActivity extends Activity {
         int n;
         while ((n = is.read(buf)) > 0) bo.write(buf, 0, n);
         return bo.toString("UTF-8");
-    }
-
-    /* ============ WEBVIEW DE RESPALDO ============ */
-    private class PlayerClient extends WebViewClient {
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            if (url.contains("youtube.com/watch") || url.contains("youtu.be/")) {
-                injectWatchCss();
-                tap();
-                enforce();
-                view.postDelayed(() -> { injectWatchCss(); tap(); enforce(); }, 700);
-                view.postDelayed(() -> enforce(), 1800);
-                view.postDelayed(() -> enforce(), 3500);
-                startPoll();
-            } else if (url.contains("/embed/") || url.contains("youtube-nocookie")) {
-                tap();
-                enforce();
-                view.postDelayed(() -> { tap(); enforce(); }, 700);
-                view.postDelayed(() -> enforce(), 1800);
-                view.postDelayed(() -> enforce(), 3500);
-                startPoll();
-            }
-        }
-    }
-
-    private void injectWatchCss() {
-        playerWv.evaluateJavascript(
-            "(function(){if(document.getElementById('mcCss'))return;" +
-            "var s=document.createElement('style');s.id='mcCss';" +
-            "s.textContent='ytd-masthead,#masthead,#comments,ytd-comments,#related,ytd-related,#secondary,#below,#chat,ytd-live-chat-frame,#subscribe-button,ytd-reel-shelf-renderer{display:none!important}';" +
-            "document.head.appendChild(s);window.scrollTo(0,0);})()", null);
-    }
-
-    private void tap() {
-        long t = SystemClock.uptimeMillis();
-        float cx = Math.max(1, playerWv.getWidth() / 2f);
-        float cy = Math.max(1, playerWv.getHeight() / 2f);
-        MotionEvent down = MotionEvent.obtain(t, t, MotionEvent.ACTION_DOWN, cx, cy, 0);
-        MotionEvent up   = MotionEvent.obtain(t, t + 60, MotionEvent.ACTION_UP, cx, cy, 0);
-        playerWv.dispatchTouchEvent(down);
-        playerWv.dispatchTouchEvent(up);
-        down.recycle();
-        up.recycle();
-    }
-
-    private void enforce() {
-        playerWv.evaluateJavascript(
-            "(function(){var v=document.querySelector('video');" +
-            "if(!v)return 'novideo';" +
-            "v.removeAttribute('muted');v.defaultMuted=false;v.muted=false;v.volume=1;" +
-            "if(v.paused){v.play();}" +
-            "return 'ok m='+v.muted+' p='+v.paused;})()",
-            value -> wv.evaluateJavascript("debug('bridge " + value + "')", null)
-        );
-    }
-
-    private void startPoll() {
-        if (polling) return;
-        polling = true;
-        final Runnable[] r = new Runnable[1];
-        r[0] = () -> {
-            if (!polling) return; // se cerró el video: no seguir sondeando
-            playerWv.evaluateJavascript(
-                "(function(){var v=document.querySelector('video');if(!v)return null;" +
-                "return JSON.stringify({t:v.currentTime||0,p:v.paused,e:v.ended,m:v.muted});})()",
-                value -> {
-                    if (!polling) return;
-                    if (value == null || value.equals("null")) {
-                        noVideoCount++;
-                        if (noVideoCount > 4 && !triedAlt && lastId != null) {
-                            triedAlt = true;
-                            noVideoCount = 0;
-                            runOnUiThread(() -> playerWv.loadUrl(
-                                "https://www.youtube-nocookie.com/embed/" + lastId +
-                                "?autoplay=1&playsinline=1&rel=0"));
-                        }
-                    } else {
-                        noVideoCount = 0;
-                        if ((value.contains("\"m\":true") || value.contains("\"p\":true"))
-                                && !value.contains("\"e\":true")) enforce();
-                    }
-                    wv.evaluateJavascript(
-                        "window.onBridgeState && window.onBridgeState(" + value + ");", null);
-                }
-            );
-            if (polling) wv.postDelayed(r[0], 1000);
-        };
-        wv.postDelayed(r[0], 1200);
-    }
-
-    /** Corta el sondeo y libera el foco de audio que enforce() venía pidiendo
-     *  cada segundo; se llama al cerrar el video para no interferir más con
-     *  la reproducción nativa. */
-    private void stopPoll() {
-        polling = false;
-    }
-
-    private void js(final String code) {
-        runOnUiThread(() -> playerWv.evaluateJavascript(code, null));
     }
 
     @Override
