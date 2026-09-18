@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.media.AudioManager;
 import android.net.Uri;
@@ -11,7 +12,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -47,11 +47,6 @@ public class MainActivity extends Activity {
     public static WeakReference<MainActivity> self;
 
     private WebView wv;
-    private WebView playerWv;
-    private FrameLayout rootLayout;
-    private android.widget.TextView videoCloseBtn;
-
-    private String lastId = null;
     private boolean npInit = false;
     private String pendingExport = null;
 
@@ -68,24 +63,21 @@ public class MainActivity extends Activity {
         self = new WeakReference<>(this);
 
         FrameLayout root = new FrameLayout(this);
-        rootLayout = root;
 
         wv = new WebView(this);
         config(wv.getSettings());
-        wv.setWebViewClient(new WebViewClient());
+        wv.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                // Avisa al HTML de la orientación inicial tras cargar.
+                notifyOrientation();
+            }
+        });
         wv.setWebChromeClient(new WebChromeClient());
         wv.addJavascriptInterface(new Bridge(), "Android");
         root.addView(wv, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));
-
-        // WebView SOLO para ver el video (mudo). El audio lo pone PlaybackService.
-        playerWv = new WebView(this);
-        config(playerWv.getSettings());
-        playerWv.setWebViewClient(new WebViewClient());
-        playerWv.setWebChromeClient(new WebChromeClient());
-        root.addView(playerWv, new FrameLayout.LayoutParams(1, 1));
-        playerWv.setAlpha(0f);
 
         setContentView(root);
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
@@ -95,6 +87,23 @@ public class MainActivity extends Activity {
         requestNotifPermission();
 
         wv.loadUrl("file:///android_asset/index.html");
+    }
+
+    /** Se llama cuando el sistema detecta un cambio de orientación.
+     *  Gracias a configChanges en el Manifest, la Activity NO se recrea,
+     *  así que el WebView y su estado se conservan. Solo avisamos al JS. */
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        notifyOrientation();
+    }
+
+    private void notifyOrientation() {
+        if (wv == null) return;
+        final boolean landscape = getResources().getConfiguration().orientation
+                == Configuration.ORIENTATION_LANDSCAPE;
+        runOnUiThread(() -> wv.evaluateJavascript(
+                "window.onOrientationChange && window.onOrientationChange(" + landscape + ")", null));
     }
 
     private void requestNotifPermission() {
@@ -170,75 +179,6 @@ public class MainActivity extends Activity {
             i.putExtra(PlaybackService.EXTRA_SEEK, sec);
             PlaybackService.start(MainActivity.this, i);
         }
-
-        @JavascriptInterface
-        public void showVideoOverlay(final String id) {
-            runOnUiThread(() -> {
-                try {
-                    lastId = id;
-                    android.util.DisplayMetrics dm = getResources().getDisplayMetrics();
-                    int size = (int) (Math.min(dm.widthPixels, dm.heightPixels) * 0.92f);
-                    FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(size, size);
-                    lp.gravity = android.view.Gravity.CENTER;
-                    playerWv.setLayoutParams(lp);
-                    playerWv.setAlpha(1f);
-
-                    // mute=1 + rel=0: sin audio, sin recomendaciones
-                    playerWv.loadUrl("https://www.youtube.com/embed/" + id
-                            + "?autoplay=1&playsinline=1&rel=0&mute=1&controls=1");
-
-                    if (videoCloseBtn == null) {
-                        videoCloseBtn = new android.widget.TextView(MainActivity.this);
-                        videoCloseBtn.setText("✕");
-                        videoCloseBtn.setTextSize(20);
-                        videoCloseBtn.setTextColor(0xFFFFFFFF);
-                        videoCloseBtn.setBackgroundColor(0x99000000);
-                        int pad = (int) (10 * getResources().getDisplayMetrics().density);
-                        videoCloseBtn.setPadding(pad, pad / 2, pad, pad / 2);
-                        videoCloseBtn.setOnClickListener(v -> {
-                            hideVideoOverlay();
-                            wv.evaluateJavascript(
-                                "window.onVideoOverlayClosed && window.onVideoOverlayClosed()", null);
-                        });
-                        FrameLayout.LayoutParams clp = new FrameLayout.LayoutParams(
-                                FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-                        clp.gravity = android.view.Gravity.TOP | android.view.Gravity.END;
-                        int margin = (int) (18 * getResources().getDisplayMetrics().density);
-                        clp.topMargin = margin; clp.rightMargin = margin;
-                        rootLayout.addView(videoCloseBtn, clp);
-                    }
-                    videoCloseBtn.setVisibility(View.VISIBLE);
-                } catch (Exception e) {}
-            });
-        }
-
-        @JavascriptInterface
-        public void hideVideoOverlay() {
-            runOnUiThread(() -> {
-                try {
-                    // Descartar el WebView completamente: libera foco de audio
-                    // y cualquier sesión de medios interna de YouTube.
-                    playerWv.loadUrl("about:blank");
-                    playerWv.clearHistory();
-                    playerWv.clearCache(false);
-                    playerWv.setAlpha(0f);
-                    playerWv.setLayoutParams(new FrameLayout.LayoutParams(1, 1));
-                    if (videoCloseBtn != null) videoCloseBtn.setVisibility(View.GONE);
-                } catch (Exception e) {}
-            });
-        }
-
-        @JavascriptInterface
-        public void playYT(final String id) {
-            lastId = id;
-            runOnUiThread(() -> playerWv.loadUrl(
-                    "https://www.youtube.com/embed/" + id + "?autoplay=1&playsinline=1&rel=0&mute=1"));
-        }
-        @JavascriptInterface public void resumeYT() { /* ya no aplica: audio lo lleva el servicio */ }
-        @JavascriptInterface public void pauseYT()   { /* ya no aplica: audio lo lleva el servicio */ }
-        @JavascriptInterface public void stopYT()    { runOnUiThread(() -> playerWv.loadUrl("about:blank")); }
-        @JavascriptInterface public void seekYT(int sec) { /* ya no aplica: audio lo lleva el servicio */ }
-        @JavascriptInterface public void unmuteYT()  { /* ya no aplica: el video siempre va mudo */ }
 
         @JavascriptInterface
         public void getStream(final String id) {
