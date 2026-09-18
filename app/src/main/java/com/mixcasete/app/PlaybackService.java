@@ -6,7 +6,6 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.media.MediaMetadata;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
@@ -27,15 +26,6 @@ import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Servicio de reproducción en primer plano usando ExoPlayer (Media3).
- *
- * ExoPlayer sustituye al MediaPlayer nativo porque:
- *  - Soporta Opus, WebM, Vorbis, AAC, MP3 y todo lo que YouTube sirve hoy.
- *  - Permite enviar cabeceras HTTP personalizadas (User-Agent + Referer),
- *    imprescindibles para que googlevideo.com acepte la petición.
- *  - Maneja redirecciones y streams parciales correctamente.
- */
 public class PlaybackService extends Service {
 
     public static final String CHANNEL = "mixcasete_play";
@@ -95,7 +85,7 @@ public class PlaybackService extends Service {
                                 .setUsage(C.USAGE_MEDIA)
                                 .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
                                 .build(),
-                        /* handleAudioFocus= */ true)
+                        true)
                 .setHandleAudioBecomingNoisy(true)
                 .build();
 
@@ -213,7 +203,6 @@ public class PlaybackService extends Service {
         if (player == null) return;
         acquireWakeLock();
         updateMetadata();
-
         try {
             MediaItem item = MediaItem.fromUri(url);
             player.setMediaItem(item);
