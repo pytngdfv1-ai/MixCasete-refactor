@@ -359,25 +359,59 @@
     box-shadow: 0 0 5px #e74c3c;
   }
 
+  /* ============ BARRA INFERIOR DIVIDIDA ============ */
   .bottom-bar {
     margin-top: 10px; height: 36px; border-radius: 6px;
     background: linear-gradient(180deg, #2b251e 0%, #171310 100%);
     box-shadow: inset 0 3px 5px rgba(0,0,0,0.7), 0 1px 1px rgba(255,255,255,0.3);
     position: relative;
-    cursor: pointer;
+    display: flex;
+    overflow: hidden;
+    user-select: none;
+  }
+  .bb-left {
+    flex: 3;
     display: flex; align-items: center; justify-content: center; gap: 9px;
+    cursor: pointer;
     font-family: 'Montserrat', sans-serif;
     font-size: 9.5px; font-weight: 800; letter-spacing: 2px;
     color: #d8c9a8;
-    user-select: none;
+    min-width: 0;
   }
-  .bottom-bar:active { box-shadow: inset 0 5px 8px rgba(0,0,0,0.85); }
+  .bb-left:active { box-shadow: inset 0 5px 8px rgba(0,0,0,0.85); }
+  .bb-left #plBarText {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 62%;
+  }
+  .bb-divider {
+    width: 2px;
+    background: linear-gradient(180deg, #0a0a0a 0%, #3a352f 50%, #0a0a0a 100%);
+    box-shadow: 0 0 4px rgba(0,0,0,0.8);
+  }
+  .bb-right {
+    flex: 1;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
+    color: #f5a623;
+    background: linear-gradient(180deg, #2b251e 0%, #1e1a14 100%);
+    text-shadow: 0 1px 0 rgba(0,0,0,0.6);
+    transition: all 0.15s;
+  }
+  .bb-right:active { box-shadow: inset 0 5px 8px rgba(0,0,0,0.9); color: #ffcc55; }
+  .bb-right.tv-on {
+    background: linear-gradient(180deg, #b3770a 0%, #8a5c00 100%);
+    color: #fff;
+    text-shadow: 0 1px 0 rgba(0,0,0,0.4);
+  }
 
   .pl-rec-dot {
     width: 9px; height: 9px; border-radius: 50%;
     background: #4a2a26;
     box-shadow: inset 0 1px 2px rgba(0,0,0,0.7);
     transition: all 0.2s;
+    flex-shrink: 0;
   }
   .pl-rec-dot.on {
     background: #ff3b30;
@@ -393,6 +427,7 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 9px; padding: 0 6px;
     box-shadow: inset 0 1px 1px rgba(255,255,255,0.5);
+    flex-shrink: 0;
   }
 
   .sound-fab {
@@ -841,7 +876,6 @@
       radial-gradient(circle at 30% 40%, #2e2a26 0%, #171412 60%, #0a0806 100%);
   }
 
-  /* Columna izquierda: cassette + controles */
   .tv-left {
     flex: 1;
     min-width: 0;
@@ -866,7 +900,6 @@
       0 0 0 3px #c9b999;
   }
 
-  /* Columna derecha: cover grande + info */
   .tv-right {
     flex: 1;
     min-width: 0;
@@ -955,7 +988,6 @@
   .tv-status.paused .dot { background: #ffb020; box-shadow: 0 0 10px #ffb020; }
   .tv-status.stopped .dot { background: #6a6257; box-shadow: none; }
 
-  /* Controles TV: botones grandes y legibles a distancia */
   .tv-controls {
     display: flex;
     gap: 10px;
@@ -988,13 +1020,12 @@
   }
   .tv-btn.rec { color: #c0392b; }
   .tv-btn.play { color: #2e7d32; }
+  .tv-btn.tv { color: #b3770a; font-size: 14px; letter-spacing: 1px; }
 
-  /* Adaptar también el cassette dentro del Modo TV */
   .tv-cassette-wrap .track-title { font-size: clamp(14px, 1.8vw, 22px); }
   .tv-cassette-wrap .reel { width: clamp(38px, 4.5vw, 60px); height: clamp(38px, 4.5vw, 60px); }
   .tv-cassette-wrap .cassette-brand { font-size: clamp(12px, 1.4vw, 18px); }
 
-  /* En horizontal también reajustamos overlay para que se vea bien */
   body.tv-mode .search-panel,
   body.tv-mode .playlist-panel,
   body.tv-mode .info-panel {
@@ -1131,10 +1162,15 @@
     </div>
   </div>
 
-  <div class="bottom-bar" id="plOpen">
-    <span class="pl-rec-dot" id="plRecDot"></span>
-    <span id="plBarText">📼 PLAYLIST · 0 TEMAS</span>
-    <span class="pl-count" id="plCount">0</span>
+  <!-- BARRA INFERIOR DIVIDIDA: PLAYLIST (izq, grande) + TV (der, chica) -->
+  <div class="bottom-bar">
+    <div class="bb-left" id="plOpen">
+      <span class="pl-rec-dot" id="plRecDot"></span>
+      <span id="plBarText">📼 PLAYLIST · 0 TEMAS</span>
+      <span class="pl-count" id="plCount">0</span>
+    </div>
+    <div class="bb-divider"></div>
+    <div class="bb-right" id="tvToggle" title="Modo TV (horizontal)">📺 TV</div>
   </div>
 </div>
 
@@ -1200,6 +1236,7 @@
       <button class="tv-btn"       data-tv-action="ff">▶▶</button>
       <button class="tv-btn"       data-tv-action="stop">■</button>
       <button class="tv-btn"       data-tv-action="pause">❚</button>
+      <button class="tv-btn tv"    id="tvExit" title="Volver al modo móvil">📺 TV</button>
     </div>
   </div>
 
@@ -1266,9 +1303,7 @@
       </div>
     </div>
     <div class="info-row">📅 Año de estreno: <span id="infoYear">…</span></div>
-    <div class="info-row">🔗 <span id="infoUrl" style="word-break:break-all;"></span></div>
     <div class="info-links">
-      <button id="infoOpenYt">▶ VER EN YOUTUBE</button>
       <button id="infoCopyYt">📋 COPIAR LINK</button>
       <button id="infoExportPdf">📄 EXPORTAR PDF</button>
     </div>
@@ -1337,6 +1372,8 @@ const albumSquare = document.getElementById('albumSquare');
 const themeToggle = document.getElementById('themeToggle');
 const infoOverlay = document.getElementById('infoOverlay');
 const plList = document.getElementById('plList');
+const tvToggle = document.getElementById('tvToggle');
+const tvExit   = document.getElementById('tvExit');
 
 /* === Referencias vista TV === */
 const tvTrackTitle   = document.getElementById('tvTrackTitle');
@@ -1371,12 +1408,36 @@ themeToggle.onclick = () => applyTheme(!document.body.classList.contains('dark')
   applyTheme(saved === 'dark');
 })();
 
-/* ============ 📺 CAMBIO DE ORIENTACIÓN ============ */
-/* Esta función la llama MainActivity.java desde onConfigurationChanged y
-   también al cargar la página, con el booleano "landscape". */
+/* ============ 📺 TOGGLE TV ============ */
+function isTvOn() { return document.body.classList.contains('tv-mode'); }
+
+function setTvMode(on) {
+  document.body.classList.toggle('tv-mode', !!on);
+  // Refleja estado en el botón de la barra inferior
+  tvToggle.classList.toggle('tv-on', !!on);
+  tvToggle.textContent = on ? '📱 MÓVIL' : '📺 TV';
+  // Fuerza orientación desde Java
+  if (HAS_BRIDGE && typeof Android.setOrientation === 'function') {
+    try { Android.setOrientation(on ? 'landscape' : 'portrait'); } catch (e) {}
+  }
+  syncTvView();
+}
+function toggleTvMode() { setTvMode(!isTvOn()); }
+
+tvToggle.addEventListener('click', toggleTvMode);
+tvExit.addEventListener('click', () => setTvMode(false));
+
+/* La llamada desde Java para cambios de orientación por sensor
+   NO debe revertir un toggle manual. Solo sincronizamos la vista. */
 window.onOrientationChange = function (landscape) {
-  document.body.classList.toggle('tv-mode', !!landscape);
-  // Sincroniza estado de la cinta y reels en la vista TV con el estado real
+  const manual = isTvOn();
+  if (landscape && !manual) {
+    // giro natural a horizontal → activar TV
+    setTvMode(true);
+  } else if (!landscape && manual) {
+    // si el usuario ya lo puso a mano y gira a vertical, respetamos su elección
+    setTvMode(false);
+  }
   syncTvView();
 };
 
@@ -1386,7 +1447,6 @@ function stopNativeClock() { if (nativeClock) { clearInterval(nativeClock); nati
 
 /* ============ SINCRONIZAR VISTA TV ============ */
 function syncTvView() {
-  // Título/artista/cover
   if (tvTrackTitle)  tvTrackTitle.textContent  = current.title || 'Inserta una cinta · Pulsa SEARCH';
   if (tvTitleBig)    tvTitleBig.textContent    = current.title || '—';
   if (tvArtistBig)   tvArtistBig.textContent   = current.author || '@Mix.Casete';
@@ -1394,7 +1454,6 @@ function syncTvView() {
   if (tvCoverImg && current.thumb && tvCoverImg.src !== current.thumb) {
     tvCoverImg.src = current.thumb;
   }
-  // Estado (led/status)
   updateTvStatusFromMode();
 }
 
@@ -1403,7 +1462,6 @@ function updateTvStatusFromMode() {
   const playing = isPlayingNow();
   tvStatus.classList.remove('paused', 'stopped');
   if (playing) {
-    tvStatus.classList.remove('paused', 'stopped');
     tvStatus.innerHTML = '<span class="dot"></span>REPRODUCIENDO';
   } else if (mode !== 'none') {
     tvStatus.classList.add('paused');
@@ -1438,7 +1496,7 @@ window.onNativePlayerEvent = function (event) {
   updateTvStatusFromMode();
 };
 
-/* ============ 📼 WEBVIEW RESPALDO (ya no se usa para video, solo por si acaso) ============ */
+/* ============ 📼 WEBVIEW RESPALDO ============ */
 function fbLoad(id) {
   if (HAS_BRIDGE) {
     mode = 'bridge'; setLed('bridge'); embedPos = 0;
@@ -1479,7 +1537,7 @@ window.onDownloaded = function (id, path) {
   }
 };
 
-/* ============ 🎵 INFO DEL TEMA (pulsación larga) ============ */
+/* ============ 🎵 INFO DEL TEMA ============ */
 function ytUrlOf(id) { return 'https://www.youtube.com/watch?v=' + id; }
 
 function openInfo(t) {
@@ -1487,7 +1545,6 @@ function openInfo(t) {
   document.getElementById('infoCover').src = t.thumb || ('https://i.ytimg.com/vi/' + t.id + '/hqdefault.jpg');
   document.getElementById('infoTitle').textContent = t.title || '—';
   document.getElementById('infoArtist').textContent = t.author || 'YouTube';
-  document.getElementById('infoUrl').textContent = ytUrlOf(t.id);
   document.getElementById('infoYear').textContent = '…';
   document.getElementById('infoLyrics').textContent = '⏳ Buscando letra...';
   infoOverlay.classList.add('open');
@@ -1497,15 +1554,6 @@ function openInfo(t) {
 document.getElementById('infoClose').onclick = () => infoOverlay.classList.remove('open');
 infoOverlay.onclick = e => { if (e.target === infoOverlay) infoOverlay.classList.remove('open'); };
 
-document.getElementById('infoOpenYt').onclick = () => {
-  if (!infoTrack) return;
-  const url = ytUrlOf(infoTrack.id);
-  if (HAS_BRIDGE && typeof Android.openBrowser === 'function') { Android.openBrowser(url); }
-  else {
-    const w = window.open(url, '_blank');
-    if (!w) copyText(url, '🔗 Link copiado');
-  }
-};
 document.getElementById('infoCopyYt').onclick = () => {
   if (!infoTrack) return;
   copyText(ytUrlOf(infoTrack.id), '📋 Link copiado');
@@ -2442,9 +2490,9 @@ document.querySelectorAll('.piano-btn').forEach(btn => {
   });
 });
 
-/* Controles de la vista TV */
 document.querySelectorAll('.tv-btn').forEach(btn => {
   btn.addEventListener('click', () => {
+    if (btn.id === 'tvExit') return; // gestionado aparte
     document.querySelectorAll('.tv-btn').forEach(b => b.classList.remove('active'));
     const a = btn.dataset.tvAction;
     if (a === 'record') { recToPlaylist(); return; }
