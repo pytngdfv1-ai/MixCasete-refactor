@@ -29,8 +29,12 @@ android {
 }
 
 dependencies {
-    // Revertido: BravePipeExtractor entregaba una URL "válida" (el título/portada
-    // cambiaban) pero sin audio real con el MediaPlayer nativo de Android.
-    // Se vuelve a la versión original que sí reproducía correctamente.
+    // Extractor de YouTube (devuelve la URL de audio).
     implementation 'com.github.TeamNewPipe:NewPipeExtractor:dev-SNAPSHOT'
+
+    // Reproductor robusto: soporta Opus/WebM, cabeceras personalizadas,
+    // y maneja URLs de googlevideo mucho mejor que MediaPlayer nativo.
+    implementation 'androidx.media3:media3-exoplayer:1.3.1'
+    implementation 'androidx.media3:media3-datasource:1.3.1'
+    implementation 'androidx.media3:media3-common:1.3.1'
 }
