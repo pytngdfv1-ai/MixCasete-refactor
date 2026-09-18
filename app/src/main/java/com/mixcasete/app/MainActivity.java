@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.database.Cursor;
 import android.media.AudioManager;
@@ -12,6 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.view.View;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -69,7 +71,6 @@ public class MainActivity extends Activity {
         wv.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView view, String url) {
-                // Avisa al HTML de la orientación inicial tras cargar.
                 notifyOrientation();
             }
         });
@@ -89,9 +90,6 @@ public class MainActivity extends Activity {
         wv.loadUrl("file:///android_asset/index.html");
     }
 
-    /** Se llama cuando el sistema detecta un cambio de orientación.
-     *  Gracias a configChanges en el Manifest, la Activity NO se recrea,
-     *  así que el WebView y su estado se conservan. Solo avisamos al JS. */
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
@@ -142,6 +140,22 @@ public class MainActivity extends Activity {
             runOnUiThread(() -> {
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                } catch (Exception e) {}
+            });
+        }
+
+        /** Fuerza orientación desde el HTML. mode: "landscape", "portrait" o "auto". */
+        @JavascriptInterface
+        public void setOrientation(final String mode) {
+            runOnUiThread(() -> {
+                try {
+                    if ("landscape".equals(mode)) {
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+                    } else if ("portrait".equals(mode)) {
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+                    } else {
+                        setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
+                    }
                 } catch (Exception e) {}
             });
         }
@@ -431,12 +445,36 @@ public class MainActivity extends Activity {
             StreamInfo info = StreamInfo.getInfo(ServiceList.YouTube,
                     "https://www.youtube.com/watch?v=" + id);
             List<AudioStream> audios = info.getAudioStreams();
-            AudioStream best = null;
+
+            AudioStream mp4 = null;       // preferido: audio/mp4 (AAC) — seguro en MediaPlayer
+            AudioStream fallback = null;  // cualquier otro (webm/opus) — puede fallar
+
             for (AudioStream a : audios) {
                 if (a == null || a.getContent() == null) continue;
-                if (best == null || a.getAverageBitrate() > best.getAverageBitrate()) best = a;
+                String mime = "";
+                try {
+                    if (a.getFormat() != null && a.getFormat().getMimeType() != null) {
+                        mime = a.getFormat().getMimeType();
+                    }
+                } catch (Throwable t) {}
+
+                boolean isMp4 = mime.startsWith("audio/mp4")
+                             || mime.contains("aac")
+                             || mime.contains("mp4a")
+                             || a.getContent().contains(".m4a")
+                             || a.getContent().toLowerCase().contains("mime=audio%2fmp4")
+                             || a.getContent().toLowerCase().contains("mime=audio/mp4");
+
+                if (isMp4) {
+                    if (mp4 == null || a.getAverageBitrate() > mp4.getAverageBitrate()) mp4 = a;
+                } else {
+                    if (fallback == null || a.getAverageBitrate() > fallback.getAverageBitrate()) fallback = a;
+                }
             }
+
+            AudioStream best = (mp4 != null) ? mp4 : fallback;
             if (best == null) return null;
+
             JSONObject out = new JSONObject();
             out.put("url", best.getContent());
             out.put("title", info.getName());
@@ -564,7 +602,10 @@ public class MainActivity extends Activity {
             if (f == null) continue;
             String u = f.optString("url", "");
             if (u.isEmpty()) continue;
+            String mime = f.optString("mimeType", "");
+            boolean isMp4 = mime.startsWith("audio/mp4");
             int br = f.optInt("bitrate", 0);
+            if (isMp4) br += 1000000; // prioridad artificial
             if (br > bestBr) { bestBr = br; best = u; }
         }
         return best;
