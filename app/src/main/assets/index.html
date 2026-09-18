@@ -1413,12 +1413,15 @@ function isTvOn() { return document.body.classList.contains('tv-mode'); }
 
 function setTvMode(on) {
   document.body.classList.toggle('tv-mode', !!on);
-  // Refleja estado en el botón de la barra inferior
   tvToggle.classList.toggle('tv-on', !!on);
   tvToggle.textContent = on ? '📱 MÓVIL' : '📺 TV';
-  // Fuerza orientación desde Java
   if (HAS_BRIDGE && typeof Android.setOrientation === 'function') {
     try { Android.setOrientation(on ? 'landscape' : 'portrait'); } catch (e) {}
+  }
+  // Al activar TV, abrimos también el diálogo de "Emitir" del sistema
+  // para que el usuario elija el dispositivo (Samsung Crystal, Chromecast, etc.).
+  if (on && HAS_BRIDGE && typeof Android.openCastSettings === 'function') {
+    try { Android.openCastSettings(); } catch (e) {}
   }
   syncTvView();
 }
@@ -1427,15 +1430,11 @@ function toggleTvMode() { setTvMode(!isTvOn()); }
 tvToggle.addEventListener('click', toggleTvMode);
 tvExit.addEventListener('click', () => setTvMode(false));
 
-/* La llamada desde Java para cambios de orientación por sensor
-   NO debe revertir un toggle manual. Solo sincronizamos la vista. */
 window.onOrientationChange = function (landscape) {
   const manual = isTvOn();
   if (landscape && !manual) {
-    // giro natural a horizontal → activar TV
     setTvMode(true);
   } else if (!landscape && manual) {
-    // si el usuario ya lo puso a mano y gira a vertical, respetamos su elección
     setTvMode(false);
   }
   syncTvView();
@@ -2492,7 +2491,7 @@ document.querySelectorAll('.piano-btn').forEach(btn => {
 
 document.querySelectorAll('.tv-btn').forEach(btn => {
   btn.addEventListener('click', () => {
-    if (btn.id === 'tvExit') return; // gestionado aparte
+    if (btn.id === 'tvExit') return;
     document.querySelectorAll('.tv-btn').forEach(b => b.classList.remove('active'));
     const a = btn.dataset.tvAction;
     if (a === 'record') { recToPlaylist(); return; }
