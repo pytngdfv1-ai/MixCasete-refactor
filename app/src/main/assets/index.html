@@ -822,6 +822,185 @@
   body.dark .info-row { background: rgba(255,255,255,0.06); border-color: #4a443c; color: #d8c9a8; }
   body.dark .info-lyrics { background: rgba(0,0,0,0.35); border-color: #4a443c; color: #d9d2c4; }
   body.dark .info-lyrics-title { color: #d8c9a8; }
+
+  /* ============================================================
+     📺 MODO TV — Se activa cuando el móvil está en horizontal
+     ============================================================ */
+  #tvMode { display: none; }
+  body.tv-mode .device { display: none; }
+  body.tv-mode #tvMode { display: flex; }
+
+  #tvMode {
+    width: 100vw; height: 100vh;
+    padding: 18px 24px;
+    gap: 20px;
+    align-items: stretch;
+    justify-content: space-between;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 30% 40%, #2e2a26 0%, #171412 60%, #0a0806 100%);
+  }
+
+  /* Columna izquierda: cassette + controles */
+  .tv-left {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .tv-cassette-wrap {
+    width: 100%;
+    max-width: 620px;
+    background: linear-gradient(180deg, #232323 0%, #161616 100%);
+    border-radius: 14px;
+    padding: 14px;
+    position: relative;
+    box-shadow:
+      inset 0 0 0 2px #0a0a0a,
+      inset 0 6px 14px rgba(0,0,0,0.9),
+      0 8px 24px rgba(0,0,0,0.7),
+      0 0 0 3px #c9b999;
+  }
+
+  /* Columna derecha: cover grande + info */
+  .tv-right {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+
+  .tv-cover {
+    width: 100%;
+    max-width: 100%;
+    max-height: 58vh;
+    aspect-ratio: 1 / 1;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #1c1815;
+    box-shadow:
+      0 12px 40px rgba(0,0,0,0.8),
+      0 0 0 2px #c9b999;
+    position: relative;
+  }
+  .tv-cover img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+  }
+  .tv-cover::after {
+    content: ''; position: absolute; inset: 0;
+    background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, transparent 35%, transparent 75%, rgba(0,0,0,0.2) 100%);
+    pointer-events: none;
+  }
+
+  .tv-info {
+    text-align: center;
+    width: 100%;
+    padding: 0 10px;
+  }
+  .tv-title {
+    font-family: 'Oswald', 'Arial Black', sans-serif;
+    font-size: clamp(18px, 2.4vw, 30px);
+    font-weight: 700;
+    color: #f2e8d5;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    letter-spacing: 0.3px;
+  }
+  .tv-artist {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(11px, 1.1vw, 15px);
+    font-weight: 800;
+    color: #f5a623;
+    margin-top: 6px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tv-tape-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 10px;
+  }
+  .tv-reel {
+    width: clamp(28px, 3.4vw, 46px);
+    height: clamp(28px, 3.4vw, 46px);
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+  }
+  .tv-reel.playing { animation: spin 1.4s linear infinite; }
+  .tv-status {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(9px, 0.9vw, 12px);
+    font-weight: 800;
+    color: #c9b999;
+    letter-spacing: 2px;
+  }
+  .tv-status .dot {
+    display: inline-block;
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #39d353;
+    box-shadow: 0 0 10px #39d353;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  .tv-status.paused .dot { background: #ffb020; box-shadow: 0 0 10px #ffb020; }
+  .tv-status.stopped .dot { background: #6a6257; box-shadow: none; }
+
+  /* Controles TV: botones grandes y legibles a distancia */
+  .tv-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+    padding: 10px 14px;
+    background: linear-gradient(180deg, #2b251e 0%, #171310 100%);
+    border-radius: 10px;
+    box-shadow: inset 0 3px 5px rgba(0,0,0,0.7), 0 1px 1px rgba(255,255,255,0.2);
+  }
+  .tv-btn {
+    min-width: 54px;
+    height: 46px;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(180deg, #faf2e2 0%, #dfd2b8 100%);
+    font-size: 20px;
+    color: #2b251e;
+    cursor: pointer;
+    box-shadow:
+      inset 0 2px 1px rgba(255,255,255,0.95),
+      inset 0 -3px 4px rgba(0,0,0,0.18),
+      0 3px 4px rgba(0,0,0,0.5);
+    transition: transform 0.07s ease;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+  }
+  .tv-btn:active, .tv-btn.active {
+    transform: translateY(3px);
+    background: linear-gradient(180deg, #eee3cb 0%, #d2c3a4 100%);
+  }
+  .tv-btn.rec { color: #c0392b; }
+  .tv-btn.play { color: #2e7d32; }
+
+  /* Adaptar también el cassette dentro del Modo TV */
+  .tv-cassette-wrap .track-title { font-size: clamp(14px, 1.8vw, 22px); }
+  .tv-cassette-wrap .reel { width: clamp(38px, 4.5vw, 60px); height: clamp(38px, 4.5vw, 60px); }
+  .tv-cassette-wrap .cassette-brand { font-size: clamp(12px, 1.4vw, 18px); }
+
+  /* En horizontal también reajustamos overlay para que se vea bien */
+  body.tv-mode .search-panel,
+  body.tv-mode .playlist-panel,
+  body.tv-mode .info-panel {
+    max-width: 560px;
+    max-height: 90vh;
+  }
 </style>
 </head>
 <body>
@@ -858,6 +1037,7 @@
 
 <div class="debug-indicator" id="debugIndicator"></div>
 
+<!-- ====================== VISTA VERTICAL (móvil) ====================== -->
 <div class="device" id="device">
   <button class="theme-toggle" id="themeToggle" title="Modo oscuro / claro">🌙</button>
   <div class="top-grille"></div>
@@ -958,6 +1138,87 @@
   </div>
 </div>
 
+<!-- ====================== VISTA TV (horizontal) ====================== -->
+<div id="tvMode">
+  <div class="tv-left">
+    <div class="tv-cassette-wrap">
+      <div class="corner-screw cs-tl"></div>
+      <div class="corner-screw cs-tr"></div>
+      <div class="corner-screw cs-bl"></div>
+      <div class="corner-screw cs-br"></div>
+
+      <div class="cassette-shell">
+        <div class="cassette-label">
+          <div class="track-title" id="tvTrackTitle">Inserta una cinta · Pulsa SEARCH</div>
+        </div>
+
+        <div class="cassette-body">
+          <div class="cassette-content">
+            <div class="side-label-a">A</div>
+
+            <div class="reel-capsule">
+              <svg class="reel" id="tvReelLeft" viewBox="0 0 100 100"><use href="#reelShape"/></svg>
+
+              <div class="tape-window">
+                <div class="tape-pack-left" id="tvTapePack"></div>
+                <div class="tape-pad-right"></div>
+                <div class="tape-counter">
+                  <div class="ticks"></div>
+                  <div class="nums"><span>100</span><span>50</span><span>0</span></div>
+                </div>
+              </div>
+
+              <svg class="reel" id="tvReelRight" viewBox="0 0 100 100"><use href="#reelShape"/></svg>
+            </div>
+
+            <div class="side-label-min">
+              <div class="num">60</div>
+              <div class="unit">MIN.</div>
+            </div>
+          </div>
+
+          <div class="cassette-bottom-row">
+            <div class="brand-dot"></div>
+            <div class="cassette-brand" id="tvArtistBrand">@Mix.Casete</div>
+          </div>
+        </div>
+
+        <div class="cassette-lower">
+          <div class="lower-hole"></div>
+          <div class="lower-hole square"></div>
+          <div class="lower-screw"></div>
+          <div class="lower-hole square"></div>
+          <div class="lower-hole"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tv-controls">
+      <button class="tv-btn rec"   data-tv-action="record">●</button>
+      <button class="tv-btn play"  data-tv-action="play">▶</button>
+      <button class="tv-btn"       data-tv-action="rew">◀</button>
+      <button class="tv-btn"       data-tv-action="ff">▶▶</button>
+      <button class="tv-btn"       data-tv-action="stop">■</button>
+      <button class="tv-btn"       data-tv-action="pause">❚</button>
+    </div>
+  </div>
+
+  <div class="tv-right">
+    <div class="tv-cover">
+      <img id="tvCoverImg" src="https://image.qwenlm.ai/public_source/73f575de-f2a3-4b64-b512-110b8807a7bd/1821418eb-dd31-4840-83e9-c11413ca3667.png" alt="Cover">
+    </div>
+    <div class="tv-info">
+      <div class="tv-title" id="tvTitleBig">—</div>
+      <div class="tv-artist" id="tvArtistBig">@Mix.Casete</div>
+      <div class="tv-tape-row">
+        <svg class="tv-reel" id="tvReelBigLeft" viewBox="0 0 100 100"><use href="#reelShape"/></svg>
+        <span class="tv-status stopped" id="tvStatus"><span class="dot"></span>DETENIDO</span>
+        <svg class="tv-reel" id="tvReelBigRight" viewBox="0 0 100 100"><use href="#reelShape"/></svg>
+      </div>
+    </div>
+  </div>
+</div>
+
 <button class="sound-fab" id="soundFab">🔊</button>
 
 <div class="search-overlay" id="searchOverlay">
@@ -1020,7 +1281,6 @@
 <div class="cover-menu-overlay" id="coverMenuOverlay">
   <div class="cover-menu-box">
     <button id="coverMenuArt">🖼️ Ver portada</button>
-    <button id="coverMenuVideo">▶ Ver video</button>
     <button id="coverMenuLyrics">🎤 Ver letra</button>
     <button id="coverMenuCancel">Cancelar</button>
   </div>
@@ -1061,6 +1321,7 @@ const audio = document.getElementById('audioEl');
 audio.volume = 1.0;
 audio.defaultMuted = false;
 
+/* === Referencias vista vertical === */
 const reelL = document.getElementById('reelLeft');
 const reelR = document.getElementById('reelRight');
 const tapePack = document.getElementById('tapePack');
@@ -1076,6 +1337,19 @@ const albumSquare = document.getElementById('albumSquare');
 const themeToggle = document.getElementById('themeToggle');
 const infoOverlay = document.getElementById('infoOverlay');
 const plList = document.getElementById('plList');
+
+/* === Referencias vista TV === */
+const tvTrackTitle   = document.getElementById('tvTrackTitle');
+const tvArtistBrand  = document.getElementById('tvArtistBrand');
+const tvCoverImg     = document.getElementById('tvCoverImg');
+const tvTitleBig     = document.getElementById('tvTitleBig');
+const tvArtistBig    = document.getElementById('tvArtistBig');
+const tvStatus       = document.getElementById('tvStatus');
+const tvReelLeft     = document.getElementById('tvReelLeft');
+const tvReelRight    = document.getElementById('tvReelRight');
+const tvReelBigLeft  = document.getElementById('tvReelBigLeft');
+const tvReelBigRight = document.getElementById('tvReelBigRight');
+const tvTapePack     = document.getElementById('tvTapePack');
 
 let mode = 'none';
 let current = { id: null, title: '', author: '', thumb: '' };
@@ -1097,19 +1371,74 @@ themeToggle.onclick = () => applyTheme(!document.body.classList.contains('dark')
   applyTheme(saved === 'dark');
 })();
 
+/* ============ 📺 CAMBIO DE ORIENTACIÓN ============ */
+/* Esta función la llama MainActivity.java desde onConfigurationChanged y
+   también al cargar la página, con el booleano "landscape". */
+window.onOrientationChange = function (landscape) {
+  document.body.classList.toggle('tv-mode', !!landscape);
+  // Sincroniza estado de la cinta y reels en la vista TV con el estado real
+  syncTvView();
+};
+
 /* ============ RELOJES ============ */
 function startNativeClock() { stopNativeClock(); nativeClock = setInterval(() => { nativePos++; }, 1000); }
 function stopNativeClock() { if (nativeClock) { clearInterval(nativeClock); nativeClock = null; } }
 
+/* ============ SINCRONIZAR VISTA TV ============ */
+function syncTvView() {
+  // Título/artista/cover
+  if (tvTrackTitle)  tvTrackTitle.textContent  = current.title || 'Inserta una cinta · Pulsa SEARCH';
+  if (tvTitleBig)    tvTitleBig.textContent    = current.title || '—';
+  if (tvArtistBig)   tvArtistBig.textContent   = current.author || '@Mix.Casete';
+  if (tvArtistBrand) tvArtistBrand.textContent = current.author || '@Mix.Casete';
+  if (tvCoverImg && current.thumb && tvCoverImg.src !== current.thumb) {
+    tvCoverImg.src = current.thumb;
+  }
+  // Estado (led/status)
+  updateTvStatusFromMode();
+}
+
+function updateTvStatusFromMode() {
+  if (!tvStatus) return;
+  const playing = isPlayingNow();
+  tvStatus.classList.remove('paused', 'stopped');
+  if (playing) {
+    tvStatus.classList.remove('paused', 'stopped');
+    tvStatus.innerHTML = '<span class="dot"></span>REPRODUCIENDO';
+  } else if (mode !== 'none') {
+    tvStatus.classList.add('paused');
+    tvStatus.innerHTML = '<span class="dot"></span>PAUSADO';
+  } else {
+    tvStatus.classList.add('stopped');
+    tvStatus.innerHTML = '<span class="dot"></span>DETENIDO';
+  }
+}
+
+let isPlayingFlag = false;
+function isPlayingNow() {
+  if (mode === 'stream') return !audio.paused;
+  return isPlayingFlag;
+}
+
 /* ============ 🎵 EVENTOS NATIVOS ============ */
 window.onNativePlayerEvent = function (event) {
-  if (event === 'playing') { setReels(true); startNativeClock(); debug('🔊 SONANDO (nativo)'); }
-  else if (event === 'paused') { setReels(false); stopNativeClock(); }
-  else if (event === 'ended') { setReels(false); stopNativeClock(); autoNext(); }
-  else if (event === 'error') { debug('⚠ Error de audio nativo'); setReels(false); stopNativeClock(); }
+  if (event === 'playing') {
+    isPlayingFlag = true;
+    setReels(true); startNativeClock(); debug('🔊 SONANDO (nativo)');
+  } else if (event === 'paused') {
+    isPlayingFlag = false;
+    setReels(false); stopNativeClock();
+  } else if (event === 'ended') {
+    isPlayingFlag = false;
+    setReels(false); stopNativeClock(); autoNext();
+  } else if (event === 'error') {
+    isPlayingFlag = false;
+    debug('⚠ Error de audio nativo'); setReels(false); stopNativeClock();
+  }
+  updateTvStatusFromMode();
 };
 
-/* ============ 📼 WEBVIEW RESPALDO ============ */
+/* ============ 📼 WEBVIEW RESPALDO (ya no se usa para video, solo por si acaso) ============ */
 function fbLoad(id) {
   if (HAS_BRIDGE) {
     mode = 'bridge'; setLed('bridge'); embedPos = 0;
@@ -1192,7 +1521,7 @@ function imgToDataUrl(url) {
         c.width = img.naturalWidth; c.height = img.naturalHeight;
         c.getContext('2d').drawImage(img, 0, 0);
         resolve(c.toDataURL('image/jpeg', 0.9));
-      } catch (e) { resolve(null); } // imagen "tainted" por CORS: se sigue sin portada
+      } catch (e) { resolve(null); }
     };
     img.onerror = () => resolve(null);
     img.src = url;
@@ -1292,8 +1621,6 @@ async function fetchYear(t) {
 function cleanLyrics(s) {
   return String(s).replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim();
 }
-/* Limpia ruido típico de títulos de YouTube para buscar letras mejor:
-   "(Video Oficial)", "[HD]", "| Lo Mejor del Rock Argentino", "Official Audio", etc. */
 function cleanTitleForSearch(s) {
   return String(s || '')
     .replace(/\([^)]*\)/g, ' ')
@@ -1307,13 +1634,10 @@ async function fetchLyrics(t) {
   const el = document.getElementById('infoLyrics');
   el.textContent = '⏳ Buscando letra...';
   const rawTitle = t.title || '';
-  const parsedArtist = guessArtist(rawTitle); // "Artista - Tema" dentro del título
+  const parsedArtist = guessArtist(rawTitle);
   const parsedSong = parsedArtist ? rawTitle.split(' - ').slice(1).join(' - ') : rawTitle;
   const channelName = (t.author && t.author !== 'YouTube') ? t.author : '';
 
-  // Candidatos en orden de confiabilidad: primero lo parseado del título
-  // (más fiable cuando el canal es un recopilatorio, no el artista real),
-  // luego el nombre del canal, luego solo el título limpio sin artista.
   const candidates = [];
   if (parsedArtist) candidates.push({ artist: parsedArtist, song: cleanTitleForSearch(parsedSong) });
   if (channelName) candidates.push({ artist: channelName, song: cleanTitleForSearch(parsedSong || rawTitle) });
@@ -1396,29 +1720,13 @@ function openCoverZoom() {
   coverOverlay.classList.add('open');
 }
 albumSquare.addEventListener('click', () => {
-  if (!current.id) { openCoverZoom(); return; } // sin tema activo: ir directo al zoom
+  if (!current.id) { openCoverZoom(); return; }
   coverMenuOverlay.classList.add('open');
 });
 coverMenuOverlay.onclick = e => { if (e.target === coverMenuOverlay) coverMenuOverlay.classList.remove('open'); };
 document.getElementById('coverMenuCancel').onclick = () => coverMenuOverlay.classList.remove('open');
 document.getElementById('coverMenuArt').onclick = () => { coverMenuOverlay.classList.remove('open'); openCoverZoom(); };
 document.getElementById('coverMenuLyrics').onclick = () => { coverMenuOverlay.classList.remove('open'); openInfo(current); };
-document.getElementById('coverMenuVideo').onclick = () => {
-  coverMenuOverlay.classList.remove('open');
-  if (!current.id) return;
-  if (HAS_BRIDGE && typeof Android.showVideoOverlay === 'function') {
-    doPause();
-    Android.showVideoOverlay(current.id);
-  } else {
-    const url = ytUrlOf(current.id);
-    const w = window.open(url, '_blank');
-    if (!w) copyText(url, '🔗 Link copiado');
-  }
-};
-window.onVideoOverlayClosed = function () {
-  debug('Video cerrado');
-  if (mode === 'native') { try { Android.nativeResume(); } catch (e) {} }
-};
 document.getElementById('coverClose').onclick = () => coverOverlay.classList.remove('open');
 document.getElementById('zoomIn').onclick = () => setZoom(cov.s + 0.5);
 document.getElementById('zoomOut').onclick = () => setZoom(cov.s - 0.5);
@@ -1577,8 +1885,12 @@ window.onExported = ok => flashTitle(ok ? '⬆ Guardada en Descargas ✔' : '⚠
 
 /* ============ TÍTULOS ============ */
 let flashTimer = null;
-function showTitle(t) { titleEl.textContent = t; }
-function setRealTitle(t) { if (t) { current.title = t; titleEl.textContent = t; } }
+function showTitle(t) {
+  titleEl.textContent = t;
+  if (tvTrackTitle) tvTrackTitle.textContent = t;
+  if (tvTitleBig)   tvTitleBig.textContent   = t;
+}
+function setRealTitle(t) { if (t) { current.title = t; titleEl.textContent = t; syncTvView(); } }
 function flashTitle(msg) {
   showTitle(msg);
   clearTimeout(flashTimer);
@@ -1655,6 +1967,8 @@ function setArtist(a) {
   const final = a || guessArtist(current.title) || '';
   current.author = final || current.author;
   artistBrand.textContent = final || '@Mix.Casete';
+  if (tvArtistBrand) tvArtistBrand.textContent = final || '@Mix.Casete';
+  if (tvArtistBig)   tvArtistBig.textContent   = final || '@Mix.Casete';
 }
 function guessArtist(title) {
   const m = String(title || '').split(' - ');
@@ -1663,9 +1977,14 @@ function guessArtist(title) {
 function setReels(on) {
   reelL.classList.toggle('playing', on);
   reelR.classList.toggle('playing', on);
+  if (tvReelLeft)    tvReelLeft.classList.toggle('playing', on);
+  if (tvReelRight)   tvReelRight.classList.toggle('playing', on);
+  if (tvReelBigLeft) tvReelBigLeft.classList.toggle('playing', on);
+  if (tvReelBigRight)tvReelBigRight.classList.toggle('playing', on);
 }
 function setLed(m) {
   modeLed.className = 'led' + (m === 'stream' ? ' stream' : m === 'native' ? ' native' : (m === 'iframe' || m === 'embed' || m === 'bridge') ? ' bridge' : '');
+  updateTvStatusFromMode();
 }
 function extractVideoId(str) {
   str = (str || '').trim();
@@ -1777,10 +2096,14 @@ function loadFirstGood(urls, minW = 320) {
 }
 async function setCoverHQ(id, title) {
   const c = cacheGet(id);
-  if (c && c.cover) { albumImg.src = c.cover; current.thumb = c.cover; }
+  if (c && c.cover) {
+    albumImg.src = c.cover; current.thumb = c.cover;
+    if (tvCoverImg) tvCoverImg.src = c.cover;
+  }
   const urls = await bestCoverCandidates(id, title);
   const good = await loadFirstGood(urls);
   albumImg.src = good;
+  if (tvCoverImg) tvCoverImg.src = good;
   current.thumb = good;
   cacheSet(id, { cover: good });
   const item = playlist.find(t => t.id === id);
@@ -2001,13 +2324,20 @@ async function playById(id, title, thumb, author) {
   showTitle('⏳ Cargando cinta...');
   setArtist(author);
   renderPL();
+  syncTvView();
 
   const c = cacheGet(id);
   if (c) {
     if (c.title && !title) setRealTitle(c.title);
     if (c.author) setArtist(c.author);
-    if (c.cover) { albumImg.src = c.cover; current.thumb = c.cover; }
-  } else if (thumb) { albumImg.src = thumb; }
+    if (c.cover) {
+      albumImg.src = c.cover; current.thumb = c.cover;
+      if (tvCoverImg) tvCoverImg.src = c.cover;
+    }
+  } else if (thumb) {
+    albumImg.src = thumb;
+    if (tvCoverImg) tvCoverImg.src = thumb;
+  }
   setCoverHQ(id, title || (c && c.title) || '');
 
   const localItem = playlist.find(t => t.id === id);
@@ -2064,19 +2394,25 @@ function doPlay() {
   else if (mode === 'stream') { audio.play().catch(() => flashTitle('🔊 Pulsa ▶ de nuevo')); }
   setReels(true);
   soundFab.classList.remove('show');
+  isPlayingFlag = true;
+  updateTvStatusFromMode();
 }
 function doPause() {
   if (mode === 'native') { try { Android.nativePause(); } catch (e) {} stopNativeClock(); }
   else if (mode === 'bridge') { fbPause(); }
   else if (mode === 'stream') { audio.pause(); }
   setReels(false);
+  isPlayingFlag = false;
+  updateTvStatusFromMode();
 }
 function doStop() {
   if (mode === 'native') { try { Android.nativeStop(); } catch (e) {} stopNativeClock(); nativePos = 0; }
   else if (mode === 'bridge') { fbStop(); embedPos = 0; }
-  else if (mode === 'stream') { audio.pause(); audio.currentTime = 0; tapePack.style.width = '42%'; }
+  else if (mode === 'stream') { audio.pause(); audio.currentTime = 0; tapePack.style.width = '42%'; if (tvTapePack) tvTapePack.style.width = '42%'; }
   setReels(false);
   soundFab.classList.remove('show');
+  isPlayingFlag = false;
+  updateTvStatusFromMode();
 }
 function doSeek(delta) {
   if (mode === 'native') {
@@ -2106,15 +2442,31 @@ document.querySelectorAll('.piano-btn').forEach(btn => {
   });
 });
 
+/* Controles de la vista TV */
+document.querySelectorAll('.tv-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tv-btn').forEach(b => b.classList.remove('active'));
+    const a = btn.dataset.tvAction;
+    if (a === 'record') { recToPlaylist(); return; }
+    if (a === 'play') { btn.classList.add('active'); doPlay(); }
+    else if (a === 'pause') { btn.classList.add('active'); doPause(); }
+    else if (a === 'stop') { btn.classList.add('active'); doStop(); }
+    else if (a === 'rew') { doSeek(-10); }
+    else if (a === 'ff') { doSeek(10); }
+  });
+});
+
 /* ============ CINTA VIVA ============ */
 audio.addEventListener('play',    () => { if (mode === 'stream') setReels(true); });
-audio.addEventListener('playing', () => { if (mode === 'stream') { setReels(true); debug('🔊 SONANDO'); } });
-audio.addEventListener('pause',   () => { if (mode === 'stream') setReels(false); });
+audio.addEventListener('playing', () => { if (mode === 'stream') { setReels(true); debug('🔊 SONANDO'); isPlayingFlag = true; updateTvStatusFromMode(); } });
+audio.addEventListener('pause',   () => { if (mode === 'stream') { setReels(false); isPlayingFlag = false; updateTvStatusFromMode(); } });
 audio.addEventListener('waiting', () => debug('⏳ buffer...'));
 audio.addEventListener('timeupdate', () => {
   if (audio.duration) {
     const p = audio.currentTime / audio.duration;
-    tapePack.style.width = (42 - p * 30) + '%';
+    const w = (42 - p * 30) + '%';
+    tapePack.style.width = w;
+    if (tvTapePack) tvTapePack.style.width = w;
   }
 });
 audio.addEventListener('ended', autoNext);
