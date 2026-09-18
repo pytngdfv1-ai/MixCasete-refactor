@@ -13,7 +13,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.view.View;
+import android.provider.Settings;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -138,24 +138,52 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public void openBrowser(final String url) {
             runOnUiThread(() -> {
+                try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); }
+                catch (Exception e) {}
+            });
+        }
+
+        /** Abre el menú de "Emitir" / cast del sistema para elegir TV. */
+        @JavascriptInterface
+        public void openCastSettings() {
+            runOnUiThread(() -> {
+                Intent intent = null;
                 try {
-                    startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url)));
+                    intent = new Intent(Settings.ACTION_CAST_SETTINGS);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    return;
+                } catch (Exception e) {}
+                try {
+                    intent = new Intent("android.settings.CAST_SETTINGS");
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    return;
+                } catch (Exception e) {}
+                try {
+                    intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    return;
+                } catch (Exception e) {}
+                try {
+                    intent = new Intent(Settings.ACTION_DISPLAY_SETTINGS);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
                 } catch (Exception e) {}
             });
         }
 
-        /** Fuerza orientación desde el HTML. mode: "landscape", "portrait" o "auto". */
         @JavascriptInterface
         public void setOrientation(final String mode) {
             runOnUiThread(() -> {
                 try {
-                    if ("landscape".equals(mode)) {
+                    if ("landscape".equals(mode))
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-                    } else if ("portrait".equals(mode)) {
+                    else if ("portrait".equals(mode))
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
-                    } else {
+                    else
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-                    }
                 } catch (Exception e) {}
             });
         }
@@ -168,26 +196,22 @@ public class MainActivity extends Activity {
             i.putExtra(PlaybackService.EXTRA_TITLE, title != null ? title : "Mix.Casete");
             PlaybackService.start(MainActivity.this, i);
         }
-        @JavascriptInterface
-        public void nativePause() {
+        @JavascriptInterface public void nativePause() {
             Intent i = new Intent(MainActivity.this, PlaybackService.class);
             i.putExtra(PlaybackService.EXTRA_CMD, "pause");
             PlaybackService.start(MainActivity.this, i);
         }
-        @JavascriptInterface
-        public void nativeResume() {
+        @JavascriptInterface public void nativeResume() {
             Intent i = new Intent(MainActivity.this, PlaybackService.class);
             i.putExtra(PlaybackService.EXTRA_CMD, "play");
             PlaybackService.start(MainActivity.this, i);
         }
-        @JavascriptInterface
-        public void nativeStop() {
+        @JavascriptInterface public void nativeStop() {
             Intent i = new Intent(MainActivity.this, PlaybackService.class);
             i.putExtra(PlaybackService.EXTRA_CMD, "stop");
             PlaybackService.start(MainActivity.this, i);
         }
-        @JavascriptInterface
-        public void nativeSeek(int sec) {
+        @JavascriptInterface public void nativeSeek(int sec) {
             Intent i = new Intent(MainActivity.this, PlaybackService.class);
             i.putExtra(PlaybackService.EXTRA_CMD, "seek");
             i.putExtra(PlaybackService.EXTRA_SEEK, sec);
@@ -225,10 +249,8 @@ public class MainActivity extends Activity {
                         int n;
                         long total = 0;
                         while ((n = in.read(buf)) > 0) { out.write(buf, 0, n); total += n; }
-                        out.close();
-                        in.close();
-                        if (total > 10000) path = f.getAbsolutePath();
-                        else f.delete();
+                        out.close(); in.close();
+                        if (total > 10000) path = f.getAbsolutePath(); else f.delete();
                     }
                 } catch (Exception e) {}
                 final String p = path;
@@ -315,8 +337,6 @@ public class MainActivity extends Activity {
                 "window.onExported && window.onExported(" + ok + ")", null));
         }).start();
     }
-
-    /* ============ RESPALDO ÚNICO DE PLAYLIST ============ */
 
     private List<Uri> findAllPlaylistUris() {
         List<Uri> out = new ArrayList<>();
@@ -445,36 +465,12 @@ public class MainActivity extends Activity {
             StreamInfo info = StreamInfo.getInfo(ServiceList.YouTube,
                     "https://www.youtube.com/watch?v=" + id);
             List<AudioStream> audios = info.getAudioStreams();
-
-            AudioStream mp4 = null;       // preferido: audio/mp4 (AAC) — seguro en MediaPlayer
-            AudioStream fallback = null;  // cualquier otro (webm/opus) — puede fallar
-
+            AudioStream best = null;
             for (AudioStream a : audios) {
                 if (a == null || a.getContent() == null) continue;
-                String mime = "";
-                try {
-                    if (a.getFormat() != null && a.getFormat().getMimeType() != null) {
-                        mime = a.getFormat().getMimeType();
-                    }
-                } catch (Throwable t) {}
-
-                boolean isMp4 = mime.startsWith("audio/mp4")
-                             || mime.contains("aac")
-                             || mime.contains("mp4a")
-                             || a.getContent().contains(".m4a")
-                             || a.getContent().toLowerCase().contains("mime=audio%2fmp4")
-                             || a.getContent().toLowerCase().contains("mime=audio/mp4");
-
-                if (isMp4) {
-                    if (mp4 == null || a.getAverageBitrate() > mp4.getAverageBitrate()) mp4 = a;
-                } else {
-                    if (fallback == null || a.getAverageBitrate() > fallback.getAverageBitrate()) fallback = a;
-                }
+                if (best == null || a.getAverageBitrate() > best.getAverageBitrate()) best = a;
             }
-
-            AudioStream best = (mp4 != null) ? mp4 : fallback;
             if (best == null) return null;
-
             JSONObject out = new JSONObject();
             out.put("url", best.getContent());
             out.put("title", info.getName());
@@ -503,8 +499,7 @@ public class MainActivity extends Activity {
             if (data != null) {
                 conn.setDoOutput(true);
                 OutputStream os = conn.getOutputStream();
-                os.write(data);
-                os.close();
+                os.write(data); os.close();
             }
             int code = conn.getResponseCode();
             if (code == 429) throw new ReCaptchaException("reCaptcha", request.url());
@@ -602,10 +597,7 @@ public class MainActivity extends Activity {
             if (f == null) continue;
             String u = f.optString("url", "");
             if (u.isEmpty()) continue;
-            String mime = f.optString("mimeType", "");
-            boolean isMp4 = mime.startsWith("audio/mp4");
             int br = f.optInt("bitrate", 0);
-            if (isMp4) br += 1000000; // prioridad artificial
             if (br > bestBr) { bestBr = br; best = u; }
         }
         return best;
