@@ -6,11 +6,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.media.AudioAttributes;
-import android.media.AudioFocusRequest;
 import android.media.AudioManager;
 import android.media.MediaMetadata;
-import android.media.MediaPlayer;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Build;
@@ -18,15 +15,28 @@ import android.os.IBinder;
 import android.os.PowerManager;
 import android.view.KeyEvent;
 
+import androidx.media3.common.AudioAttributes;
+import androidx.media3.common.C;
+import androidx.media3.common.MediaItem;
+import androidx.media3.common.PlaybackException;
+import androidx.media3.common.Player;
+import androidx.media3.datasource.DefaultHttpDataSource;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
+
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- * Servicio de reproducción en primer plano.
+ * Servicio de reproducción en primer plano usando ExoPlayer (Media3).
  *
- * CAMBIO CLAVE: el WebView de video ya NO reproduce audio (siempre va muteado).
- * Por eso este servicio mantiene SIEMPRE el foco de audio y no reacciona a
- * pérdidas transitorias — no debería haber ninguna, porque no compite con nadie.
+ * ExoPlayer sustituye al MediaPlayer nativo porque:
+ *  - Soporta Opus, WebM, Vorbis, AAC, MP3 y todo lo que YouTube sirve hoy.
+ *  - Permite enviar cabeceras HTTP personalizadas (User-Agent + Referer),
+ *    imprescindibles para que googlevideo.com acepte la petición.
+ *  - Maneja redirecciones y streams parciales correctamente.
  */
-public class PlaybackService extends Service implements MediaPlayer.OnPreparedListener,
-        MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
+public class PlaybackService extends Service {
 
     public static final String CHANNEL = "mixcasete_play";
     public static final String EXTRA_CMD = "cmd";
@@ -35,10 +45,11 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     public static final String EXTRA_ARTIST = "artist";
     public static final String EXTRA_SEEK = "seek";
 
+    private static final String UA =
+            "Mozilla/5.0 (Linux; Android 11; Pixel 4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36";
+
     private PowerManager.WakeLock wl;
-    private AudioManager audioManager;
-    private AudioFocusRequest focusRequest;
-    private MediaPlayer player;
+    private ExoPlayer player;
     private MediaSession mediaSession;
     private String currentTitle = "Mix.Casete";
     private String currentArtist = "";
@@ -60,7 +71,66 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
         super.onCreate();
         crearCanal();
         setupMediaSession();
+        setupPlayer();
         startForeground(1, buildNotif("Mix.Casete", false));
+    }
+
+    private void setupPlayer() {
+        Map<String, String> headers = new HashMap<>();
+        headers.put("User-Agent", UA);
+        headers.put("Referer", "https://www.youtube.com/");
+        headers.put("Origin", "https://www.youtube.com");
+
+        DefaultHttpDataSource.Factory httpFactory = new DefaultHttpDataSource.Factory()
+                .setDefaultRequestProperties(headers)
+                .setUserAgent(UA)
+                .setConnectTimeoutMs(15000)
+                .setReadTimeoutMs(15000)
+                .setAllowCrossProtocolRedirects(true);
+
+        player = new ExoPlayer.Builder(this)
+                .setMediaSourceFactory(new DefaultMediaSourceFactory(httpFactory))
+                .setAudioAttributes(
+                        new AudioAttributes.Builder()
+                                .setUsage(C.USAGE_MEDIA)
+                                .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                                .build(),
+                        /* handleAudioFocus= */ true)
+                .setHandleAudioBecomingNoisy(true)
+                .build();
+
+        player.addListener(new Player.Listener() {
+            @Override
+            public void onPlaybackStateChanged(int state) {
+                if (state == Player.STATE_READY) {
+                    prepared = true;
+                    if (player.isPlaying()) {
+                        updatePlaybackState(true);
+                        updateNotif(true);
+                        notifyJs("playing");
+                    }
+                } else if (state == Player.STATE_ENDED) {
+                    prepared = false;
+                    updatePlaybackState(false);
+                    updateNotif(false);
+                    notifyJs("ended");
+                }
+            }
+
+            @Override
+            public void onIsPlayingChanged(boolean playing) {
+                updatePlaybackState(playing);
+                updateNotif(playing);
+                notifyJs(playing ? "playing" : "paused");
+            }
+
+            @Override
+            public void onPlayerError(PlaybackException error) {
+                prepared = false;
+                notifyJs("error");
+                updateNotif(false);
+            }
+        });
     }
 
     private void setupMediaSession() {
@@ -72,7 +142,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
             @Override public void onPause() { doCmd("pause"); }
             @Override public void onStop() { doCmd("stop"); }
             @Override public void onSeekTo(long pos) {
-                if (player != null && prepared) player.seekTo((int) pos);
+                if (player != null) player.seekTo(pos);
             }
             @Override
             public boolean onMediaButtonEvent(Intent mediaButtonIntent) {
@@ -109,7 +179,6 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent == null) return START_STICKY;
-
         String cmd = intent.getStringExtra(EXTRA_CMD);
         if (cmd == null) return START_STICKY;
 
@@ -123,20 +192,10 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
                 startPlayback(url);
                 break;
             case "play":
-                if (player != null && prepared) {
-                    player.start();
-                    updatePlaybackState(true);
-                    updateNotif(true);
-                    notifyJs("playing");
-                }
+                if (player != null) { player.play(); acquireWakeLock(); }
                 break;
             case "pause":
-                if (player != null && prepared) {
-                    player.pause();
-                    updatePlaybackState(false);
-                    updateNotif(false);
-                    notifyJs("paused");
-                }
+                if (player != null) player.pause();
                 break;
             case "stop":
                 stopPlayback();
@@ -144,118 +203,31 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
                 break;
             case "seek":
                 int sec = intent.getIntExtra(EXTRA_SEEK, 0);
-                if (player != null && prepared) {
-                    player.seekTo(sec * 1000);
-                }
+                if (player != null) player.seekTo(sec * 1000L);
                 break;
         }
         return START_STICKY;
     }
 
     private void startPlayback(String url) {
-        releasePlayer();
-        requestAudioFocus();
+        if (player == null) return;
         acquireWakeLock();
         updateMetadata();
 
         try {
-            player = new MediaPlayer();
-            player.setAudioAttributes(new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build());
-            player.setDataSource(url);
-            player.setOnPreparedListener(this);
-            player.setOnCompletionListener(this);
-            player.setOnErrorListener(this);
-            player.prepareAsync();
+            MediaItem item = MediaItem.fromUri(url);
+            player.setMediaItem(item);
+            player.prepare();
+            player.play();
         } catch (Exception e) {
             notifyJs("error");
         }
     }
 
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        prepared = true;
-        mp.start();
-        updatePlaybackState(true);
-        updateNotif(true);
-        notifyJs("playing");
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-        updatePlaybackState(false);
-        notifyJs("ended");
-        updateNotif(false);
-    }
-
-    @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) {
-        notifyJs("error");
-        updateNotif(false);
-        return true;
-    }
-
     private void stopPlayback() {
-        releasePlayer();
+        if (player != null) player.stop();
         releaseWakeLock();
-        releaseAudioFocus();
         if (mediaSession != null) mediaSession.setActive(false);
-    }
-
-    private void releasePlayer() {
-        if (player != null) {
-            try {
-                if (player.isPlaying()) player.stop();
-                player.release();
-            } catch (Exception e) {}
-            player = null;
-            prepared = false;
-        }
-    }
-
-    /** Pide AUDIOFOCUS_GAIN permanente. NO reacciona a pérdidas transitorias
-     *  porque ya no compite con ningún WebView. */
-    private void requestAudioFocus() {
-        audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            AudioAttributes attrs = new AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
-                    .build();
-            focusRequest = new AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN)
-                    .setAudioAttributes(attrs)
-                    .setWillPauseWhenDucked(false)
-                    .setOnAudioFocusChangeListener(focus -> {
-                        // Solo pausar si la pérdida es definitiva y persistente.
-                        if (focus == AudioManager.AUDIOFOCUS_LOSS) {
-                            if (player != null && player.isPlaying()) {
-                                player.pause();
-                                updatePlaybackState(false);
-                                updateNotif(false);
-                                notifyJs("paused");
-                            }
-                        }
-                        // AUDIOFOCUS_LOSS_TRANSIENT y _TRANSIENT_CAN_DUCK se ignoran:
-                        // el WebView ya no roba el foco, así que no deberían ocurrir.
-                    })
-                    .build();
-            audioManager.requestAudioFocus(focusRequest);
-        } else {
-            audioManager.requestAudioFocus(null, AudioManager.STREAM_MUSIC,
-                    AudioManager.AUDIOFOCUS_GAIN);
-        }
-    }
-
-    private void releaseAudioFocus() {
-        if (audioManager != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && focusRequest != null) {
-                audioManager.abandonAudioFocusRequest(focusRequest);
-            } else {
-                audioManager.abandonAudioFocus(null);
-            }
-        }
     }
 
     private void acquireWakeLock() {
@@ -283,7 +255,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     private void updatePlaybackState(boolean playing) {
         if (mediaSession == null) return;
         long pos = 0;
-        try { if (player != null && prepared) pos = player.getCurrentPosition(); } catch (Exception e) {}
+        try { if (player != null) pos = player.getCurrentPosition(); } catch (Exception e) {}
         PlaybackState st = new PlaybackState.Builder()
                 .setActions(PlaybackState.ACTION_PLAY | PlaybackState.ACTION_PAUSE
                         | PlaybackState.ACTION_PLAY_PAUSE | PlaybackState.ACTION_STOP
@@ -298,7 +270,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
 
     private Notification buildNotif(String title, boolean playing) {
         Intent pause = new Intent(this, PlaybackService.class).putExtra(EXTRA_CMD, playing ? "pause" : "play");
-        Intent stop = new Intent(this, PlaybackService.class).putExtra(EXTRA_CMD, "stop");
+        Intent stop  = new Intent(this, PlaybackService.class).putExtra(EXTRA_CMD, "stop");
         int fl = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
         PendingIntent pP = PendingIntent.getService(this, 1, pause, fl);
         PendingIntent pS = PendingIntent.getService(this, 3, stop, fl);
@@ -315,8 +287,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
                 .setSmallIcon(android.R.drawable.ic_media_play)
                 .setContentIntent(pOpen)
                 .setOngoing(playing)
-                .addAction(playing
-                        ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
+                .addAction(playing ? android.R.drawable.ic_media_pause : android.R.drawable.ic_media_play,
                         playing ? "Pausa" : "Seguir", pP)
                 .addAction(android.R.drawable.ic_delete, "Parar", pS);
 
@@ -353,6 +324,7 @@ public class PlaybackService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public void onDestroy() {
         stopPlayback();
+        if (player != null) { player.release(); player = null; }
         if (mediaSession != null) mediaSession.release();
         super.onDestroy();
     }
