@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.provider.Settings;
+import android.util.Log;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -84,9 +85,7 @@ public class MainActivity extends Activity {
         setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         new Thread(() -> cleanupDuplicateBackups()).start();
-
         requestNotifPermission();
-
         wv.loadUrl("file:///android_asset/index.html");
     }
 
@@ -132,18 +131,16 @@ public class MainActivity extends Activity {
                 "window.onNativePlayerEvent && window.onNativePlayerEvent('" + event + "')", null));
     }
 
-    /* ================= PUENTE JS ↔ JAVA ================= */
     public class Bridge {
 
         @JavascriptInterface
         public void openBrowser(final String url) {
             runOnUiThread(() -> {
                 try { startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(url))); }
-                catch (Exception e) {}
+                catch (Exception ignored) {}
             });
         }
 
-        /** Abre el menú de "Emitir" / cast del sistema para elegir TV. */
         @JavascriptInterface
         public void openCastSettings() {
             runOnUiThread(() -> {
@@ -153,24 +150,24 @@ public class MainActivity extends Activity {
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     return;
-                } catch (Exception e) {}
+                } catch (Exception ignored) {}
                 try {
                     intent = new Intent("android.settings.CAST_SETTINGS");
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     return;
-                } catch (Exception e) {}
+                } catch (Exception ignored) {}
                 try {
                     intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
                     return;
-                } catch (Exception e) {}
+                } catch (Exception ignored) {}
                 try {
                     intent = new Intent(Settings.ACTION_DISPLAY_SETTINGS);
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);
-                } catch (Exception e) {}
+                } catch (Exception ignored) {}
             });
         }
 
@@ -184,33 +181,41 @@ public class MainActivity extends Activity {
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
                     else
                         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
-                } catch (Exception e) {}
+                } catch (Exception ignored) {}
             });
         }
 
         @JavascriptInterface
         public void nativePlay(final String url, final String title) {
+            if (url == null || url.trim().isEmpty()) {
+                Log.e("MixCaseteAudio", "nativePlay: URL vacía");
+                return;
+            }
             Intent i = new Intent(MainActivity.this, PlaybackService.class);
             i.putExtra(PlaybackService.EXTRA_CMD, "play_url");
             i.putExtra(PlaybackService.EXTRA_URL, url);
             i.putExtra(PlaybackService.EXTRA_TITLE, title != null ? title : "Mix.Casete");
             PlaybackService.start(MainActivity.this, i);
         }
+
         @JavascriptInterface public void nativePause() {
             Intent i = new Intent(MainActivity.this, PlaybackService.class);
             i.putExtra(PlaybackService.EXTRA_CMD, "pause");
             PlaybackService.start(MainActivity.this, i);
         }
+
         @JavascriptInterface public void nativeResume() {
             Intent i = new Intent(MainActivity.this, PlaybackService.class);
             i.putExtra(PlaybackService.EXTRA_CMD, "play");
             PlaybackService.start(MainActivity.this, i);
         }
+
         @JavascriptInterface public void nativeStop() {
             Intent i = new Intent(MainActivity.this, PlaybackService.class);
             i.putExtra(PlaybackService.EXTRA_CMD, "stop");
             PlaybackService.start(MainActivity.this, i);
         }
+
         @JavascriptInterface public void nativeSeek(int sec) {
             Intent i = new Intent(MainActivity.this, PlaybackService.class);
             i.putExtra(PlaybackService.EXTRA_CMD, "seek");
@@ -222,7 +227,8 @@ public class MainActivity extends Activity {
         public void getStream(final String id) {
             new Thread(() -> {
                 String json = null;
-                try { json = nativePlayer(id); } catch (Exception e) {}
+                try { json = nativePlayer(id); }
+                catch (Exception ignored) {}
                 final String out = json;
                 runOnUiThread(() -> wv.evaluateJavascript(
                         "window.__streamCb && window.__streamCb(" + (out != null ? out : "null") + ")", null));
@@ -236,6 +242,7 @@ public class MainActivity extends Activity {
                 try {
                     JSONObject j = new JSONObject(nativePlayer(id));
                     String url = j.getString("url");
+                    if (url == null || url.trim().isEmpty()) throw new IOException("url vacía");
                     File dir = getExternalFilesDir(Environment.DIRECTORY_MUSIC);
                     if (dir != null) {
                         File f = new File(dir, id + ".m4a");
@@ -243,6 +250,8 @@ public class MainActivity extends Activity {
                         c.setConnectTimeout(10000);
                         c.setReadTimeout(120000);
                         c.setRequestProperty("User-Agent", UA);
+                        c.setRequestProperty("Referer", "https://www.youtube.com/");
+                        c.setRequestProperty("Origin", "https://www.youtube.com");
                         InputStream in = c.getInputStream();
                         FileOutputStream out = new FileOutputStream(f);
                         byte[] buf = new byte[16384];
@@ -252,11 +261,11 @@ public class MainActivity extends Activity {
                         out.close(); in.close();
                         if (total > 10000) path = f.getAbsolutePath(); else f.delete();
                     }
-                } catch (Exception e) {}
+                } catch (Exception ignored) {}
                 final String p = path;
                 runOnUiThread(() -> wv.evaluateJavascript(
                         "window.onDownloaded && window.onDownloaded('" + id + "'," +
-                        (p != null ? "'" + p + "'" : "null") + ")", null));
+                                (p != null ? "'" + p + "'" : "null") + ")", null));
             }).start();
         }
 
@@ -264,7 +273,7 @@ public class MainActivity extends Activity {
         public void exportPlaylist(final String json) {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q
                     && checkSelfPermission(android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                       != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                    != android.content.pm.PackageManager.PERMISSION_GRANTED) {
                 pendingExport = json;
                 requestPermissions(new String[]{ android.Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQ_WRITE);
                 return;
@@ -277,7 +286,7 @@ public class MainActivity extends Activity {
             new Thread(() -> {
                 final boolean ok = writeBytesToDownloads(base64Data, fileName);
                 runOnUiThread(() -> wv.evaluateJavascript(
-                    "window.onPdfExported && window.onPdfExported(" + ok + ")", null));
+                        "window.onPdfExported && window.onPdfExported(" + ok + ")", null));
             }).start();
         }
 
@@ -296,7 +305,7 @@ public class MainActivity extends Activity {
             new Thread(() -> {
                 final String s = readPlaylistFromDownloads();
                 if (s != null) runOnUiThread(() -> wv.evaluateJavascript(
-                    "window.onPlaylistImported && window.onPlaylistImported(" + JSONObject.quote(s) + ")", null));
+                        "window.onPlaylistImported && window.onPlaylistImported(" + JSONObject.quote(s) + ")", null));
             }).start();
         }
     }
@@ -324,8 +333,8 @@ public class MainActivity extends Activity {
                     is.close();
                     final String s = bo.toString("UTF-8");
                     runOnUiThread(() -> wv.evaluateJavascript(
-                        "window.onPlaylistImported && window.onPlaylistImported(" + JSONObject.quote(s) + ")", null));
-                } catch (Exception e) {}
+                            "window.onPlaylistImported && window.onPlaylistImported(" + JSONObject.quote(s) + ")", null));
+                } catch (Exception ignored) {}
             }).start();
         }
     }
@@ -334,7 +343,7 @@ public class MainActivity extends Activity {
         new Thread(() -> {
             final boolean ok = writePlaylistToDownloads(json);
             runOnUiThread(() -> wv.evaluateJavascript(
-                "window.onExported && window.onExported(" + ok + ")", null));
+                    "window.onExported && window.onExported(" + ok + ")", null));
         }).start();
     }
 
@@ -363,9 +372,9 @@ public class MainActivity extends Activity {
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return;
             List<Uri> all = findAllPlaylistUris();
             for (int i = 1; i < all.size(); i++) {
-                try { getContentResolver().delete(all.get(i), null, null); } catch (Exception e) {}
+                try { getContentResolver().delete(all.get(i), null, null); } catch (Exception ignored) {}
             }
-        } catch (Exception e) {}
+        } catch (Exception ignored) {}
     }
 
     private boolean writePlaylistToDownloads(String json) {
@@ -377,7 +386,7 @@ public class MainActivity extends Activity {
                 if (!existing.isEmpty()) {
                     target = existing.get(0);
                     for (int i = 1; i < existing.size(); i++) {
-                        try { cr.delete(existing.get(i), null, null); } catch (Exception e) {}
+                        try { cr.delete(existing.get(i), null, null); } catch (Exception ignored) {}
                     }
                 } else {
                     ContentValues cv = new ContentValues();
@@ -407,7 +416,7 @@ public class MainActivity extends Activity {
         try {
             byte[] data = android.util.Base64.decode(base64Data, android.util.Base64.DEFAULT);
             String safeName = (fileName == null || fileName.trim().isEmpty())
-                    ? "MixCasete_export.pdf" : fileName.replaceAll("[\\\\/:*?\"<>|]", "_");
+                    ? "MixCasete_export.pdf" : fileName.replaceAll("[\\/:*?\"<>|]", "_");
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 ContentValues cv = new ContentValues();
                 cv.put(MediaStore.Downloads.DISPLAY_NAME, safeName);
@@ -444,17 +453,17 @@ public class MainActivity extends Activity {
                 return bo.toString("UTF-8");
             } else {
                 File f = new File(Environment.getExternalStoragePublicDirectory(
-                    Environment.DIRECTORY_DOWNLOADS), "MixCasete_playlist.json");
+                        Environment.DIRECTORY_DOWNLOADS), "MixCasete_playlist.json");
                 if (!f.exists()) return null;
                 return new String(java.nio.file.Files.readAllBytes(f.toPath()), "UTF-8");
             }
         } catch (Exception e) { return null; }
     }
 
-    /* ============ EXTRACCIÓN DE AUDIO ============ */
     private synchronized void ensureNewPipe() {
         if (!npInit) {
-            try { NewPipe.init(new HttpDownloader()); } catch (Throwable t) {}
+            try { NewPipe.init(new HttpDownloader()); }
+            catch (Throwable t) { Log.e("MixCaseteAudio", "NewPipe.init failed", t); }
             npInit = true;
         }
     }
@@ -465,11 +474,34 @@ public class MainActivity extends Activity {
             StreamInfo info = StreamInfo.getInfo(ServiceList.YouTube,
                     "https://www.youtube.com/watch?v=" + id);
             List<AudioStream> audios = info.getAudioStreams();
+            if (audios == null || audios.isEmpty()) {
+                Log.e("MixCaseteAudio", "No audio streams for id=" + id);
+                return null;
+            }
+
             AudioStream best = null;
             for (AudioStream a : audios) {
                 if (a == null || a.getContent() == null) continue;
-                if (best == null || a.getAverageBitrate() > best.getAverageBitrate()) best = a;
+                String url = a.getContent() == null ? "" : a.getContent().toLowerCase();
+                String fmt = a.getFormat() != null ? a.getFormat().getName().toLowerCase() : "";
+                boolean preferred = url.contains("audio/mp4")
+                        || url.contains("mime=audio/mp4")
+                        || url.contains(".m4a")
+                        || fmt.contains("m4a")
+                        || fmt.contains("mp4");
+
+                if (preferred) {
+                    if (best == null || a.getAverageBitrate() > best.getAverageBitrate()) best = a;
+                }
             }
+
+            if (best == null) {
+                for (AudioStream a : audios) {
+                    if (a == null || a.getContent() == null) continue;
+                    if (best == null || a.getAverageBitrate() > best.getAverageBitrate()) best = a;
+                }
+            }
+
             if (best == null) return null;
             JSONObject out = new JSONObject();
             out.put("url", best.getContent());
@@ -477,6 +509,7 @@ public class MainActivity extends Activity {
             out.put("author", info.getUploaderName());
             return out.toString();
         } catch (Throwable t) {
+            Log.e("MixCaseteAudio", "newpipeExtract failed for id=" + id, t);
             return null;
         }
     }
@@ -486,21 +519,28 @@ public class MainActivity extends Activity {
         public Response execute(Request request) throws IOException, ReCaptchaException {
             HttpURLConnection conn = (HttpURLConnection) new URL(request.url()).openConnection();
             conn.setRequestMethod(request.httpMethod());
-            conn.setConnectTimeout(15000);
-            conn.setReadTimeout(15000);
+            conn.setConnectTimeout(20000);
+            conn.setReadTimeout(20000);
             conn.setRequestProperty("User-Agent", UA);
+            conn.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
+            conn.setRequestProperty("Referer", "https://www.youtube.com/");
+            conn.setRequestProperty("Origin", "https://www.youtube.com");
+            conn.setRequestProperty("Accept", "*/*");
+
             Map<String, List<String>> headers = request.headers();
             if (headers != null) {
                 for (Map.Entry<String, List<String>> e : headers.entrySet()) {
                     for (String v : e.getValue()) conn.addRequestProperty(e.getKey(), v);
                 }
             }
+
             byte[] data = request.dataToSend();
             if (data != null) {
                 conn.setDoOutput(true);
                 OutputStream os = conn.getOutputStream();
                 os.write(data); os.close();
             }
+
             int code = conn.getResponseCode();
             if (code == 429) throw new ReCaptchaException("reCaptcha", request.url());
             InputStream is = code >= 400 ? conn.getErrorStream() : conn.getInputStream();
@@ -512,6 +552,7 @@ public class MainActivity extends Activity {
                 while ((n = is.read(buf)) > 0) bo.write(buf, 0, n);
                 body = bo.toString("UTF-8");
             }
+            Log.d("MixCaseteAudio", "HTTP " + code + " " + request.url());
             return new Response(code, conn.getResponseMessage(),
                     conn.getHeaderFields(), conn.getURL().toString(), body);
         }
@@ -520,7 +561,18 @@ public class MainActivity extends Activity {
     private String nativePlayer(String id) {
         String r = newpipeExtract(id);
         if (r != null) return r;
-        return fromInstances(id);
+
+        String fallback = fromInstances(id);
+        if (fallback != null && fallback.contains("\"url\"")) {
+            try {
+                JSONObject j = new JSONObject(fallback);
+                String url = j.optString("url", "");
+                if (url.startsWith("http://") || url.startsWith("https://")) {
+                    return fallback;
+                }
+            } catch (Exception ignored) {}
+        }
+        return null;
     }
 
     private String fromInstances(String id) {
@@ -538,9 +590,10 @@ public class MainActivity extends Activity {
                     JSONObject v = new JSONObject(httpGet("https://" + host + "/api/v1/videos/" + id));
                     String url = pickInvidious(v, host);
                     if (url != null) return buildOut(url, v.optString("title", ""), v.optString("author", ""));
-                } catch (Exception e) {}
+                } catch (Exception ignored) {}
             }
-        } catch (Exception e) {}
+        } catch (Exception ignored) {}
+
         try {
             JSONArray arr = new JSONArray(httpGet("https://piped-instances.kavin.rocks/"));
             int tried = 0;
@@ -554,9 +607,9 @@ public class MainActivity extends Activity {
                     JSONObject v = new JSONObject(httpGet(api + "/streams/" + id));
                     String url = pickPiped(v);
                     if (url != null) return buildOut(url, v.optString("title", ""), v.optString("uploader", ""));
-                } catch (Exception e) {}
+                } catch (Exception ignored) {}
             }
-        } catch (Exception e) {}
+        } catch (Exception ignored) {}
         return null;
     }
 
@@ -576,6 +629,7 @@ public class MainActivity extends Activity {
             }
         }
         if (fallback != null) return fallback;
+
         JSONArray fs = v.optJSONArray("formatStreams");
         if (fs != null && fs.length() > 0) {
             JSONObject f0 = fs.optJSONObject(0);
@@ -592,13 +646,27 @@ public class MainActivity extends Activity {
         JSONArray as = v.optJSONArray("audioStreams");
         String best = null;
         int bestBr = -1;
-        if (as != null) for (int i = 0; i < as.length(); i++) {
-            JSONObject f = as.optJSONObject(i);
-            if (f == null) continue;
-            String u = f.optString("url", "");
-            if (u.isEmpty()) continue;
-            int br = f.optInt("bitrate", 0);
-            if (br > bestBr) { bestBr = br; best = u; }
+        if (as != null) {
+            for (int i = 0; i < as.length(); i++) {
+                JSONObject f = as.optJSONObject(i);
+                if (f == null) continue;
+                String u = f.optString("url", "");
+                if (u.isEmpty()) continue;
+                String mime = f.optString("mimeType", "").toLowerCase();
+                int br = f.optInt("bitrate", 0);
+                boolean preferred = mime.contains("audio/mp4") || mime.contains("m4a") || mime.contains("mp4");
+                if (preferred && br > bestBr) { bestBr = br; best = u; }
+            }
+            if (best == null) {
+                for (int i = 0; i < as.length(); i++) {
+                    JSONObject f = as.optJSONObject(i);
+                    if (f == null) continue;
+                    String u = f.optString("url", "");
+                    if (u.isEmpty()) continue;
+                    int br = f.optInt("bitrate", 0);
+                    if (br > bestBr) { bestBr = br; best = u; }
+                }
+            }
         }
         return best;
     }
