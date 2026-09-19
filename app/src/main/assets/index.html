@@ -359,7 +359,6 @@
     box-shadow: 0 0 5px #e74c3c;
   }
 
-  /* ============ BARRA INFERIOR DIVIDIDA ============ */
   .bottom-bar {
     margin-top: 10px; height: 36px; border-radius: 6px;
     background: linear-gradient(180deg, #2b251e 0%, #171310 100%);
@@ -610,7 +609,6 @@
     box-shadow: 0 3px 0 #0d47a1;
   }
 
-  /* ============ PANEL DE INFORMACIÓN DEL TEMA ============ */
   .info-head {
     display: flex; gap: 12px; align-items: center; margin-bottom: 12px;
   }
@@ -763,9 +761,6 @@
     pointer-events: none;
   }
 
-  /* ============================================================
-     🌙 MODO OSCURO
-     ============================================================ */
   body.dark { background: radial-gradient(circle at 50% 30%, #191613 0%, #0c0a09 70%, #060505 100%); }
 
   body.dark .device {
@@ -858,9 +853,6 @@
   body.dark .info-lyrics { background: rgba(0,0,0,0.35); border-color: #4a443c; color: #d9d2c4; }
   body.dark .info-lyrics-title { color: #d8c9a8; }
 
-  /* ============================================================
-     📺 MODO TV — Se activa cuando el móvil está en horizontal
-     ============================================================ */
   #tvMode { display: none; }
   body.tv-mode .device { display: none; }
   body.tv-mode #tvMode { display: flex; }
@@ -998,87 +990,36 @@
     box-shadow: inset 0 3px 5px rgba(0,0,0,0.7), 0 1px 1px rgba(255,255,255,0.2);
   }
   .tv-btn {
-    min-width: 54px;
-    height: 46px;
+    flex: 1;
+    min-height: 42px;
     border: none;
-    border-radius: 6px;
-    background: linear-gradient(180deg, #faf2e2 0%, #dfd2b8 100%);
-    font-size: 20px;
-    color: #2b251e;
-    cursor: pointer;
-    box-shadow:
-      inset 0 2px 1px rgba(255,255,255,0.95),
-      inset 0 -3px 4px rgba(0,0,0,0.18),
-      0 3px 4px rgba(0,0,0,0.5);
-    transition: transform 0.07s ease;
+    border-radius: 8px;
+    background: linear-gradient(180deg, #f7a929 0%, #e78d10 100%);
+    color: #fff;
     font-family: 'Montserrat', sans-serif;
     font-weight: 800;
+    font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 3px 0 #b3770a;
   }
-  .tv-btn:active, .tv-btn.active {
-    transform: translateY(3px);
-    background: linear-gradient(180deg, #eee3cb 0%, #d2c3a4 100%);
-  }
-  .tv-btn.rec { color: #c0392b; }
-  .tv-btn.play { color: #2e7d32; }
-  .tv-btn.tv { color: #b3770a; font-size: 14px; letter-spacing: 1px; }
-
-  .tv-cassette-wrap .track-title { font-size: clamp(14px, 1.8vw, 22px); }
-  .tv-cassette-wrap .reel { width: clamp(38px, 4.5vw, 60px); height: clamp(38px, 4.5vw, 60px); }
-  .tv-cassette-wrap .cassette-brand { font-size: clamp(12px, 1.4vw, 18px); }
-
-  body.tv-mode .search-panel,
-  body.tv-mode .playlist-panel,
-  body.tv-mode .info-panel {
-    max-width: 560px;
-    max-height: 90vh;
-  }
+  .tv-btn:active, .tv-btn.active { transform: translateY(2px); box-shadow: 0 1px 0 #b3770a; }
+  .tv-btn[data-tv-action="play"] { background: linear-gradient(180deg, #64b5f6 0%, #1976d2 100%); box-shadow: 0 3px 0 #0d47a1; }
+  .tv-btn[data-tv-action="pause"] { background: linear-gradient(180deg, #ffb74d 0%, #f57c00 100%); box-shadow: 0 3px 0 #ef6c00; }
+  .tv-btn[data-tv-action="stop"] { background: linear-gradient(180deg, #ef5350 0%, #d32f2f 100%); box-shadow: 0 3px 0 #b71c1c; }
+  .tv-btn[data-tv-action="rew"], .tv-btn[data-tv-action="ff"] { background: linear-gradient(180deg, #a1887f 0%, #6d4c41 100%); box-shadow: 0 3px 0 #4e342e; }
 </style>
 </head>
 <body>
-
-<svg width="0" height="0" style="position:absolute">
-  <defs>
-    <radialGradient id="ringGrad" cx="38%" cy="32%" r="80%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="55%" stop-color="#f2f2f2"/>
-      <stop offset="85%" stop-color="#d8d8d8"/>
-      <stop offset="100%" stop-color="#bfbfbf"/>
-    </radialGradient>
-    <radialGradient id="hubGrad" cx="35%" cy="28%" r="85%">
-      <stop offset="0%" stop-color="#6a6a6a"/>
-      <stop offset="35%" stop-color="#2e2e2e"/>
-      <stop offset="100%" stop-color="#050505"/>
-    </radialGradient>
-    <g id="reelShape">
-      <circle cx="50" cy="50" r="49" fill="url(#ringGrad)"/>
-      <g fill="#141414">
-        <rect x="45" y="5" width="10" height="15" rx="2"/>
-        <rect x="45" y="5" width="10" height="15" rx="2" transform="rotate(60 50 50)"/>
-        <rect x="45" y="5" width="10" height="15" rx="2" transform="rotate(120 50 50)"/>
-        <rect x="45" y="5" width="10" height="15" rx="2" transform="rotate(180 50 50)"/>
-        <rect x="45" y="5" width="10" height="15" rx="2" transform="rotate(240 50 50)"/>
-        <rect x="45" y="5" width="10" height="15" rx="2" transform="rotate(300 50 50)"/>
-      </g>
-      <circle cx="50" cy="50" r="27" fill="url(#hubGrad)"/>
-      <ellipse cx="42" cy="39" rx="11" ry="7" fill="rgba(255,255,255,0.22)"/>
-      <circle cx="50" cy="50" r="6" fill="#0a0a0a"/>
-    </g>
-  </defs>
-</svg>
-
-<div class="debug-indicator" id="debugIndicator"></div>
-
-<!-- ====================== VISTA VERTICAL (móvil) ====================== -->
-<div class="device" id="device">
-  <button class="theme-toggle" id="themeToggle" title="Modo oscuro / claro">🌙</button>
+<div class="device">
   <div class="top-grille"></div>
   <div class="side-knob"></div>
   <div class="side-grille"></div>
+  <button class="theme-toggle" id="themeToggle" aria-label="Tema">🌙</button>
 
   <div class="album-area">
     <div class="album-square" id="albumSquare">
-      <img id="albumImg" src="https://image.qwenlm.ai/public_source/73f575de-f2a3-4b64-b512-110b8807a7bd/1821418eb-dd31-4840-83e9-c11413ca3667.png" alt="Album">
-      <span class="zoom-hint">🔍 VER</span>
+      <img id="coverImg" alt="cover">
+      <div class="zoom-hint">PINCH</div>
     </div>
   </div>
 
@@ -1087,172 +1028,117 @@
     <div class="corner-screw cs-tr"></div>
     <div class="corner-screw cs-bl"></div>
     <div class="corner-screw cs-br"></div>
-
     <div class="cassette-shell">
       <div class="cassette-label">
-        <div class="track-title" id="trackTitle">Inserta una cinta · Pulsa SEARCH</div>
+        <div class="track-title" id="trackTitle">—</div>
       </div>
-
       <div class="cassette-body">
         <div class="cassette-content">
           <div class="side-label-a">A</div>
-
           <div class="reel-capsule">
-            <svg class="reel" id="reelLeft" viewBox="0 0 100 100"><use href="#reelShape"/></svg>
-
+            <img class="reel" id="reelLeft" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23d9d9d9' stroke-width='2'%3E%3Ccircle cx='32' cy='32' r='21'/%3E%3Ccircle cx='32' cy='32' r='8'/%3E%3Cg stroke-linecap='round'%3E%3Cpath d='M32 3v12M32 49v12M3 32h12M49 32h12'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E" alt="left reel">
             <div class="tape-window">
               <div class="tape-pack-left" id="tapePack"></div>
               <div class="tape-pad-right"></div>
-              <div class="tape-counter">
-                <div class="ticks"></div>
-                <div class="nums"><span>100</span><span>50</span><span>0</span></div>
-              </div>
             </div>
-
-            <svg class="reel" id="reelRight" viewBox="0 0 100 100"><use href="#reelShape"/></svg>
+            <img class="reel" id="reelRight" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23d9d9d9' stroke-width='2'%3E%3Ccircle cx='32' cy='32' r='21'/%3E%3Ccircle cx='32' cy='32' r='8'/%3E%3Cg stroke-linecap='round'%3E%3Cpath d='M32 3v12M32 49v12M3 32h12M49 32h12'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E" alt="right reel">
           </div>
-
-          <div class="side-label-min">
-            <div class="num">60</div>
-            <div class="unit">MIN.</div>
-          </div>
+          <div class="side-label-min"><div class="num" id="sideLabelMin">00</div><div class="unit">min</div></div>
         </div>
-
-        <div class="cassette-bottom-row">
-          <div class="brand-dot"></div>
-          <div class="cassette-brand" id="artistBrand">@Mix.Casete</div>
+        <div class="tape-counter">
+          <div class="ticks"></div>
+          <div class="nums"><span>0</span><span>10</span><span>20</span><span>30</span><span>40</span><span>50</span></div>
         </div>
       </div>
-
+      <div class="cassette-bottom-row">
+        <div class="brand-dot"></div>
+        <div class="cassette-brand" id="cassetteBrand">MIX.CASETE</div>
+      </div>
       <div class="cassette-lower">
-        <div class="lower-hole"></div>
-        <div class="lower-hole square"></div>
         <div class="lower-screw"></div>
-        <div class="lower-hole square"></div>
         <div class="lower-hole"></div>
+        <div class="lower-hole square"></div>
       </div>
     </div>
   </div>
 
-  <div class="search-strip" id="searchOpen">
-    <span>🔍 SEARCH · BUSCAR MÚSICA</span>
-    <span class="led" id="modeLed"></span>
+  <div class="search-strip" id="searchStrip">
+    <span>📼 FUNCIÓN</span>
+    <div class="led" id="modeLed"></div>
   </div>
 
   <div class="buttons-area">
     <div class="button-row-top">
-      <div class="btn-top"></div><div class="btn-top"></div><div class="btn-top"></div>
-      <div class="btn-top"></div><div class="btn-top"></div><div class="btn-top"></div>
+      <div class="btn-top"></div>
+      <div class="btn-top"></div>
     </div>
     <div class="button-labels">
+      <div class="button-label">SEARCH</div>
       <div class="button-label">RECORD</div>
       <div class="button-label">PLAY</div>
-      <div class="button-label">REW</div>
-      <div class="button-label">F.F</div>
-      <div class="button-label">STOP/EJECT</div>
       <div class="button-label">PAUSE</div>
+      <div class="button-label">STOP</div>
     </div>
     <div class="button-row-main">
-      <button class="piano-btn" data-action="record"><span class="btn-icon">●</span></button>
-      <button class="piano-btn" data-action="play"><span class="btn-icon">▶</span></button>
-      <button class="piano-btn" data-action="rew"><span class="btn-icon">◀</span></button>
-      <button class="piano-btn" data-action="ff"><span class="btn-icon">▶▶</span></button>
-      <button class="piano-btn" data-action="stop"><span class="btn-icon">■</span></button>
-      <button class="piano-btn" data-action="pause"><span class="btn-icon">❚</span></button>
+      <button class="piano-btn" data-action="search" aria-label="Buscar"><span class="btn-icon">🔎</span></button>
+      <button class="piano-btn" data-action="record" aria-label="Grabar"><span class="btn-icon">●</span></button>
+      <button class="piano-btn" data-action="play" aria-label="Play"><span class="btn-icon">▶</span></button>
+      <button class="piano-btn" data-action="pause" aria-label="Pausa"><span class="btn-icon">⏸</span></button>
+      <button class="piano-btn" data-action="stop" aria-label="Stop"><span class="btn-icon">■</span></button>
     </div>
   </div>
 
-  <!-- BARRA INFERIOR DIVIDIDA: PLAYLIST (izq, grande) + TV (der, chica) -->
-  <div class="bottom-bar">
-    <div class="bb-left" id="plOpen">
-      <span class="pl-rec-dot" id="plRecDot"></span>
-      <span id="plBarText">📼 PLAYLIST · 0 TEMAS</span>
-      <span class="pl-count" id="plCount">0</span>
+  <div class="bottom-bar" id="playlistBar">
+    <div class="bb-left">
+      <div class="pl-rec-dot" id="plRecDot"></div>
+      <div id="plBarText">📼 PLAYLIST · 0 TEMAS</div>
     </div>
     <div class="bb-divider"></div>
-    <div class="bb-right" id="tvToggle" title="Modo TV (horizontal)">📺 TV</div>
+    <div class="bb-right" id="tvToggle">📺 TV</div>
   </div>
 </div>
 
-<!-- ====================== VISTA TV (horizontal) ====================== -->
-<div id="tvMode">
+<div id="tvMode" class="tv-mode">
   <div class="tv-left">
     <div class="tv-cassette-wrap">
-      <div class="corner-screw cs-tl"></div>
-      <div class="corner-screw cs-tr"></div>
-      <div class="corner-screw cs-bl"></div>
-      <div class="corner-screw cs-br"></div>
-
-      <div class="cassette-shell">
-        <div class="cassette-label">
-          <div class="track-title" id="tvTrackTitle">Inserta una cinta · Pulsa SEARCH</div>
-        </div>
-
-        <div class="cassette-body">
-          <div class="cassette-content">
-            <div class="side-label-a">A</div>
-
-            <div class="reel-capsule">
-              <svg class="reel" id="tvReelLeft" viewBox="0 0 100 100"><use href="#reelShape"/></svg>
-
-              <div class="tape-window">
-                <div class="tape-pack-left" id="tvTapePack"></div>
-                <div class="tape-pad-right"></div>
-                <div class="tape-counter">
-                  <div class="ticks"></div>
-                  <div class="nums"><span>100</span><span>50</span><span>0</span></div>
+      <div class="cassette-window" style="margin: 0;">
+        <div class="cassette-shell">
+          <div class="cassette-label">
+            <div class="track-title" id="tvTrackTitle">—</div>
+          </div>
+          <div class="cassette-body">
+            <div class="cassette-content">
+              <div class="side-label-a">A</div>
+              <div class="reel-capsule">
+                <img class="tv-reel" id="tvReelLeft" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23d9d9d9' stroke-width='2'%3E%3Ccircle cx='32' cy='32' r='21'/%3E%3Ccircle cx='32' cy='32' r='8'/%3E%3Cg stroke-linecap='round'%3E%3Cpath d='M32 3v12M32 49v12M3 32h12M49 32h12'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E" alt="left reel">
+                <div class="tape-window" style="width: 120px;">
+                  <div class="tape-pack-left" id="tvTapePack"></div>
+                  <div class="tape-pad-right"></div>
                 </div>
+                <img class="tv-reel" id="tvReelRight" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23d9d9d9' stroke-width='2'%3E%3Ccircle cx='32' cy='32' r='21'/%3E%3Ccircle cx='32' cy='32' r='8'/%3E%3Cg stroke-linecap='round'%3E%3Cpath d='M32 3v12M32 49v12M3 32h12M49 32h12'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E" alt="right reel">
               </div>
-
-              <svg class="reel" id="tvReelRight" viewBox="0 0 100 100"><use href="#reelShape"/></svg>
-            </div>
-
-            <div class="side-label-min">
-              <div class="num">60</div>
-              <div class="unit">MIN.</div>
+              <div class="side-label-min"><div class="num" id="tvLabelMin">00</div><div class="unit">min</div></div>
             </div>
           </div>
-
-          <div class="cassette-bottom-row">
-            <div class="brand-dot"></div>
-            <div class="cassette-brand" id="tvArtistBrand">@Mix.Casete</div>
-          </div>
-        </div>
-
-        <div class="cassette-lower">
-          <div class="lower-hole"></div>
-          <div class="lower-hole square"></div>
-          <div class="lower-screw"></div>
-          <div class="lower-hole square"></div>
-          <div class="lower-hole"></div>
         </div>
       </div>
-    </div>
-
-    <div class="tv-controls">
-      <button class="tv-btn rec"   data-tv-action="record">●</button>
-      <button class="tv-btn play"  data-tv-action="play">▶</button>
-      <button class="tv-btn"       data-tv-action="rew">◀</button>
-      <button class="tv-btn"       data-tv-action="ff">▶▶</button>
-      <button class="tv-btn"       data-tv-action="stop">■</button>
-      <button class="tv-btn"       data-tv-action="pause">❚</button>
-      <button class="tv-btn tv"    id="tvExit" title="Volver al modo móvil">📺 TV</button>
     </div>
   </div>
-
   <div class="tv-right">
-    <div class="tv-cover">
-      <img id="tvCoverImg" src="https://image.qwenlm.ai/public_source/73f575de-f2a3-4b64-b512-110b8807a7bd/1821418eb-dd31-4840-83e9-c11413ca3667.png" alt="Cover">
-    </div>
+    <div class="tv-cover"><img id="tvCoverImg" alt="cover"></div>
     <div class="tv-info">
       <div class="tv-title" id="tvTitleBig">—</div>
-      <div class="tv-artist" id="tvArtistBig">@Mix.Casete</div>
-      <div class="tv-tape-row">
-        <svg class="tv-reel" id="tvReelBigLeft" viewBox="0 0 100 100"><use href="#reelShape"/></svg>
-        <span class="tv-status stopped" id="tvStatus"><span class="dot"></span>DETENIDO</span>
-        <svg class="tv-reel" id="tvReelBigRight" viewBox="0 0 100 100"><use href="#reelShape"/></svg>
-      </div>
+      <div class="tv-artist" id="tvArtistBig">—</div>
     </div>
+    <div class="tv-status" id="tvStatus"><span class="dot"></span>DETENIDO</div>
+    <div class="tv-controls">
+      <button class="tv-btn" data-tv-action="rew">⏪</button>
+      <button class="tv-btn" data-tv-action="play">▶</button>
+      <button class="tv-btn" data-tv-action="pause">⏸</button>
+      <button class="tv-btn" data-tv-action="stop">■</button>
+      <button class="tv-btn" data-tv-action="ff">⏩</button>
+    </div>
+    <button class="tv-btn" id="tvExit" data-tv-action="exit" style="width: 100%; margin-top: 4px;">📱 MÓVIL</button>
   </div>
 </div>
 
@@ -1287,6 +1173,9 @@
       <button class="pl-clear blue" id="plImport">⬇ IMPORTAR</button>
       <button class="pl-clear" id="plClear">🗑 VACIAR</button>
     </div>
+    <div class="pl-footer" style="margin-top: 6px;">
+      <button class="pl-clear blue" id="plErrorsBtn" style="background: linear-gradient(180deg, #ffb74d 0%, #f57c00 100%); border-color: #ef6c00; box-shadow: 0 3px 0 #ef6c00;">⚠ ERRORES</button>
+    </div>
     <input type="file" id="fileImport" accept=".json,application/json" style="display:none">
   </div>
 </div>
@@ -1315,1257 +1204,410 @@
 
 <div class="cover-menu-overlay" id="coverMenuOverlay">
   <div class="cover-menu-box">
-    <button id="coverMenuArt">🖼️ Ver portada</button>
-    <button id="coverMenuLyrics">🎤 Ver letra</button>
-    <button id="coverMenuCancel">Cancelar</button>
+    <button id="coverMenuOpen">🌐 ABRIR EN NAVEGADOR</button>
+    <button id="coverMenuCopy">📋 COPIAR LINK</button>
+    <button id="coverMenuCancel">CANCELAR</button>
   </div>
 </div>
 
 <div class="cover-overlay" id="coverOverlay">
-  <img class="cover-full-img" id="coverFullImg" alt="Cover">
-  <button class="cover-x" id="coverClose">✕</button>
+  <button class="cover-x" id="coverX">✕</button>
   <div class="cover-zoom">
-    <button id="zoomIn">＋</button>
-    <button id="zoomOut">－</button>
-    <button id="zoomReset">⟲</button>
+    <button id="coverZoomIn">＋</button>
+    <button id="coverZoomOut">－</button>
   </div>
-  <div class="cover-zoom-level" id="zoomLevel">100%</div>
+  <div class="cover-zoom-level" id="coverZoomLevel">100%</div>
+  <img class="cover-full-img" id="coverFullImg" alt="cover full">
 </div>
 
-<audio id="audioEl"></audio>
-
 <script>
-const IS_ANDROID = /Android/i.test(navigator.userAgent);
-const HAS_BRIDGE = typeof Android !== 'undefined';
-
-let debugBar = null;
-function debug(msg) {
-  console.log('[DEBUG]', msg);
-  if (!debugBar) {
-    debugBar = document.createElement('div');
-    debugBar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;'
-      + 'background:#000;color:#0f0;font:11px monospace;padding:4px 8px;'
-      + 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'
-      + 'border-bottom:1px solid #0f0;';
-    document.body.appendChild(debugBar);
-  }
-  debugBar.textContent = String(msg);
-}
-
-const audio = document.getElementById('audioEl');
-audio.volume = 1.0;
-audio.defaultMuted = false;
-
-/* === Referencias vista vertical === */
-const reelL = document.getElementById('reelLeft');
-const reelR = document.getElementById('reelRight');
-const tapePack = document.getElementById('tapePack');
-const titleEl = document.getElementById('trackTitle');
-const albumImg = document.getElementById('albumImg');
-const artistBrand = document.getElementById('artistBrand');
-const modeLed = document.getElementById('modeLed');
-const soundFab = document.getElementById('soundFab');
-const coverOverlay = document.getElementById('coverOverlay');
-const coverFullImg = document.getElementById('coverFullImg');
-const zoomLevelEl = document.getElementById('zoomLevel');
-const albumSquare = document.getElementById('albumSquare');
-const themeToggle = document.getElementById('themeToggle');
-const infoOverlay = document.getElementById('infoOverlay');
-const plList = document.getElementById('plList');
-const tvToggle = document.getElementById('tvToggle');
-const tvExit   = document.getElementById('tvExit');
-
-/* === Referencias vista TV === */
-const tvTrackTitle   = document.getElementById('tvTrackTitle');
-const tvArtistBrand  = document.getElementById('tvArtistBrand');
-const tvCoverImg     = document.getElementById('tvCoverImg');
-const tvTitleBig     = document.getElementById('tvTitleBig');
-const tvArtistBig    = document.getElementById('tvArtistBig');
-const tvStatus       = document.getElementById('tvStatus');
-const tvReelLeft     = document.getElementById('tvReelLeft');
-const tvReelRight    = document.getElementById('tvReelRight');
-const tvReelBigLeft  = document.getElementById('tvReelBigLeft');
-const tvReelBigRight = document.getElementById('tvReelBigRight');
-const tvTapePack     = document.getElementById('tvTapePack');
-
-let mode = 'none';
-let current = { id: null, title: '', author: '', thumb: '' };
-let playToken = 0;
-let embedPos = 0;
-let nativePos = 0, nativeClock = null;
-let infoTrack = null;
-
-/* ============ 🌙 TEMA ============ */
-function applyTheme(dark) {
-  document.body.classList.toggle('dark', dark);
-  themeToggle.textContent = dark ? '☀️' : '🌙';
-  try { localStorage.setItem('mixcasete_theme', dark ? 'dark' : 'light'); } catch (e) {}
-}
-themeToggle.onclick = () => applyTheme(!document.body.classList.contains('dark'));
-(function initTheme() {
-  let saved = null;
-  try { saved = localStorage.getItem('mixcasete_theme'); } catch (e) {}
-  applyTheme(saved === 'dark');
-})();
-
-/* ============ 📺 TOGGLE TV ============ */
-function isTvOn() { return document.body.classList.contains('tv-mode'); }
-
-function setTvMode(on) {
-  document.body.classList.toggle('tv-mode', !!on);
-  tvToggle.classList.toggle('tv-on', !!on);
-  tvToggle.textContent = on ? '📱 MÓVIL' : '📺 TV';
-  if (HAS_BRIDGE && typeof Android.setOrientation === 'function') {
-    try { Android.setOrientation(on ? 'landscape' : 'portrait'); } catch (e) {}
-  }
-  // Al activar TV, abrimos también el diálogo de "Emitir" del sistema
-  // para que el usuario elija el dispositivo (Samsung Crystal, Chromecast, etc.).
-  if (on && HAS_BRIDGE && typeof Android.openCastSettings === 'function') {
-    try { Android.openCastSettings(); } catch (e) {}
-  }
-  syncTvView();
-}
-function toggleTvMode() { setTvMode(!isTvOn()); }
-
-tvToggle.addEventListener('click', toggleTvMode);
-tvExit.addEventListener('click', () => setTvMode(false));
-
-window.onOrientationChange = function (landscape) {
-  const manual = isTvOn();
-  if (landscape && !manual) {
-    setTvMode(true);
-  } else if (!landscape && manual) {
-    setTvMode(false);
-  }
-  syncTvView();
-};
-
-/* ============ RELOJES ============ */
-function startNativeClock() { stopNativeClock(); nativeClock = setInterval(() => { nativePos++; }, 1000); }
-function stopNativeClock() { if (nativeClock) { clearInterval(nativeClock); nativeClock = null; } }
-
-/* ============ SINCRONIZAR VISTA TV ============ */
-function syncTvView() {
-  if (tvTrackTitle)  tvTrackTitle.textContent  = current.title || 'Inserta una cinta · Pulsa SEARCH';
-  if (tvTitleBig)    tvTitleBig.textContent    = current.title || '—';
-  if (tvArtistBig)   tvArtistBig.textContent   = current.author || '@Mix.Casete';
-  if (tvArtistBrand) tvArtistBrand.textContent = current.author || '@Mix.Casete';
-  if (tvCoverImg && current.thumb && tvCoverImg.src !== current.thumb) {
-    tvCoverImg.src = current.thumb;
-  }
-  updateTvStatusFromMode();
-}
-
-function updateTvStatusFromMode() {
-  if (!tvStatus) return;
-  const playing = isPlayingNow();
-  tvStatus.classList.remove('paused', 'stopped');
-  if (playing) {
-    tvStatus.innerHTML = '<span class="dot"></span>REPRODUCIENDO';
-  } else if (mode !== 'none') {
-    tvStatus.classList.add('paused');
-    tvStatus.innerHTML = '<span class="dot"></span>PAUSADO';
-  } else {
-    tvStatus.classList.add('stopped');
-    tvStatus.innerHTML = '<span class="dot"></span>DETENIDO';
-  }
-}
-
-let isPlayingFlag = false;
-function isPlayingNow() {
-  if (mode === 'stream') return !audio.paused;
-  return isPlayingFlag;
-}
-
-/* ============ 🎵 EVENTOS NATIVOS ============ */
-window.onNativePlayerEvent = function (event) {
-  if (event === 'playing') {
-    isPlayingFlag = true;
-    setReels(true); startNativeClock(); debug('🔊 SONANDO (nativo)');
-  } else if (event === 'paused') {
-    isPlayingFlag = false;
-    setReels(false); stopNativeClock();
-  } else if (event === 'ended') {
-    isPlayingFlag = false;
-    setReels(false); stopNativeClock(); autoNext();
-  } else if (event === 'error') {
-    isPlayingFlag = false;
-    debug('⚠ Error de audio nativo'); setReels(false); stopNativeClock();
-  }
-  updateTvStatusFromMode();
-};
-
-/* ============ 📼 WEBVIEW RESPALDO ============ */
-function fbLoad(id) {
-  if (HAS_BRIDGE) {
-    mode = 'bridge'; setLed('bridge'); embedPos = 0;
-    try { Android.playYT(id); } catch (e) {}
-    setReels(true);
-  }
-}
-function fbPlay()  { if (mode === 'bridge') { try { Android.resumeYT(); } catch (e) {} } }
-function fbPause() { if (mode === 'bridge') { try { Android.pauseYT(); } catch (e) {} } setReels(false); }
-function fbStop()  { if (mode === 'bridge') { try { Android.stopYT(); } catch (e) {} } setReels(false); }
-function fbSeek(s) { if (mode === 'bridge') { try { Android.seekYT(s); } catch (e) {} } }
-
-window.onBridgeState = function (s) {
-  if (mode !== 'bridge') return;
-  if (!s) return;
-  let d = s;
-  if (typeof s === 'string') { try { d = JSON.parse(s); } catch (e) { return; } }
-  if (d.e) { setReels(false); autoNext(); return; }
-  setReels(!d.p);
-  embedPos = Math.floor(d.t || 0);
-};
-
-function bridgeGetStream(id) {
-  return new Promise(res => {
-    let done = false;
-    window.__streamCb = j => { if (!done) { done = true; res(j); } };
-    try { Android.getStream(id); } catch (e) { res(null); }
-    setTimeout(() => { if (!done) { done = true; res(null); } }, 9000);
-  });
-}
-
-window.onDownloaded = function (id, path) {
-  const item = playlist.find(t => t.id === id);
-  if (item) {
-    if (path) { item.local = path; flashTitle('💾 Tema guardado en el teléfono'); }
-    else flashTitle('⚠ No se pudo descargar');
-    savePL();
-  }
-};
-
-/* ============ 🎵 INFO DEL TEMA ============ */
-function ytUrlOf(id) { return 'https://www.youtube.com/watch?v=' + id; }
-
-function openInfo(t) {
-  infoTrack = t;
-  document.getElementById('infoCover').src = t.thumb || ('https://i.ytimg.com/vi/' + t.id + '/hqdefault.jpg');
-  document.getElementById('infoTitle').textContent = t.title || '—';
-  document.getElementById('infoArtist').textContent = t.author || 'YouTube';
-  document.getElementById('infoYear').textContent = '…';
-  document.getElementById('infoLyrics').textContent = '⏳ Buscando letra...';
-  infoOverlay.classList.add('open');
-  fetchYear(t);
-  fetchLyrics(t);
-}
-document.getElementById('infoClose').onclick = () => infoOverlay.classList.remove('open');
-infoOverlay.onclick = e => { if (e.target === infoOverlay) infoOverlay.classList.remove('open'); };
-
-document.getElementById('infoCopyYt').onclick = () => {
-  if (!infoTrack) return;
-  copyText(ytUrlOf(infoTrack.id), '📋 Link copiado');
-};
-
-function imgToDataUrl(url) {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      try {
-        const c = document.createElement('canvas');
-        c.width = img.naturalWidth; c.height = img.naturalHeight;
-        c.getContext('2d').drawImage(img, 0, 0);
-        resolve(c.toDataURL('image/jpeg', 0.9));
-      } catch (e) { resolve(null); }
-    };
-    img.onerror = () => resolve(null);
-    img.src = url;
-  });
-}
-
-window.onPdfExported = function (ok) {
-  debug(ok ? '📄 PDF guardado en Descargas' : '⚠ No se pudo guardar el PDF');
-};
-
-document.getElementById('infoExportPdf').onclick = async () => {
-  if (!infoTrack) return;
-  const btn = document.getElementById('infoExportPdf');
-  const prevTxt = btn.textContent;
-  btn.textContent = '⏳ Generando...'; btn.disabled = true;
-  try {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-    const title = infoTrack.title || 'Tema';
-    const artist = infoTrack.author || '';
-    const lyricsText = document.getElementById('infoLyrics').textContent || '';
-    let y = 50;
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(18);
-    doc.text(title, 40, y, { maxWidth: 500 }); y += 26;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(12);
-    doc.text(artist, 40, y); y += 20;
-
-    const imgUrl = document.getElementById('infoCover').src;
-    const dataUrl = await imgToDataUrl(imgUrl);
-    if (dataUrl) { doc.addImage(dataUrl, 'JPEG', 40, y, 150, 150); }
-    y += 170;
-
-    doc.setFont('helvetica', 'bold'); doc.setFontSize(11);
-    doc.text('🎤 LETRA', 40, y); y += 18;
-    doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-    const lines = doc.splitTextToSize(lyricsText.trim() || 'Letra no disponible.', 510);
-    lines.forEach(line => {
-      if (y > 780) { doc.addPage(); y = 50; }
-      doc.text(line, 40, y); y += 13;
-    });
-
-    const fname = 'MixCasete_' + title.replace(/[^a-z0-9áéíóúñ]+/gi, '_').slice(0, 40) + '.pdf';
-    if (HAS_BRIDGE && typeof Android.exportPdf === 'function') {
-      const base64 = doc.output('datauristring').split(',')[1];
-      Android.exportPdf(base64, fname);
-    } else {
-      doc.save(fname);
-      debug('📄 PDF descargado');
-    }
-  } catch (e) {
-    debug('⚠ No se pudo generar el PDF');
-  } finally {
-    btn.textContent = prevTxt; btn.disabled = false;
-  }
-};
-
-function copyText(txt, msg) {
-  const done = () => {
-    const b = document.getElementById('infoCopyYt');
-    const old = b.textContent;
-    b.textContent = msg || '✔ Copiado';
-    setTimeout(() => { b.textContent = old; }, 1500);
+  const HAS_BRIDGE = !!window.Android;
+  const app = { errors: [] };
+  let debugLog = [];
+  const debug = (...args) => {
+    const msg = args.map(v => typeof v === 'string' ? v : JSON.stringify(v)).join(' ');
+    debugLog.push(new Date().toLocaleTimeString() + ' ' + msg);
+    while (debugLog.length > 80) debugLog.shift();
+    console.log(msg);
   };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(txt).then(done).catch(() => fallbackCopy(txt, done));
-  } else fallbackCopy(txt, done);
-}
-function fallbackCopy(txt, done) {
-  const ta = document.createElement('textarea');
-  ta.value = txt;
-  ta.style.position = 'fixed'; ta.style.opacity = '0';
-  document.body.appendChild(ta);
-  ta.select();
-  try { document.execCommand('copy'); } catch (e) {}
-  document.body.removeChild(ta);
-  done();
-}
 
-async function fetchYear(t) {
-  const el = document.getElementById('infoYear');
-  el.textContent = '…';
-  const artist = (t.author && t.author !== 'YouTube') ? t.author : guessArtist(t.title);
-  const terms = [ (t.title || '') + (artist ? ' ' + artist : ''), (t.title || '') ];
-  for (const term of terms) {
-    if (!term.trim()) continue;
-    try {
-      const r = await fetchTimeout('https://itunes.apple.com/search?media=music&limit=1&term=' + encodeURIComponent(term), 6000);
-      if (!r.ok) continue;
-      const j = await r.json();
-      const rd = j.results && j.results[0] && j.results[0].releaseDate;
-      if (rd) { el.textContent = rd.slice(0, 4); return; }
-    } catch (e) {}
-  }
-  el.textContent = '—';
-}
-
-function cleanLyrics(s) {
-  return String(s).replace(/\r/g, '').replace(/\n{3,}/g, '\n\n').trim();
-}
-function cleanTitleForSearch(s) {
-  return String(s || '')
-    .replace(/\([^)]*\)/g, ' ')
-    .replace(/\[[^\]]*\]/g, ' ')
-    .replace(/\|.*/g, ' ')
-    .replace(/\b(official\s*(video|audio|music\s*video|lyric\s*video)?|video\s*oficial|audio\s*oficial|lyrics?|hd|hq|4k|remaster(ed)?|full\s*album)\b/gi, ' ')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
-}
-async function fetchLyrics(t) {
-  const el = document.getElementById('infoLyrics');
-  el.textContent = '⏳ Buscando letra...';
-  const rawTitle = t.title || '';
-  const parsedArtist = guessArtist(rawTitle);
-  const parsedSong = parsedArtist ? rawTitle.split(' - ').slice(1).join(' - ') : rawTitle;
-  const channelName = (t.author && t.author !== 'YouTube') ? t.author : '';
-
-  const candidates = [];
-  if (parsedArtist) candidates.push({ artist: parsedArtist, song: cleanTitleForSearch(parsedSong) });
-  if (channelName) candidates.push({ artist: channelName, song: cleanTitleForSearch(parsedSong || rawTitle) });
-  candidates.push({ artist: '', song: cleanTitleForSearch(rawTitle) });
-
-  for (const c of candidates) {
-    if (!c.song) continue;
-    try {
-      const url = c.artist
-        ? 'https://lrclib.net/api/get?artist_name=' + encodeURIComponent(c.artist) + '&track_name=' + encodeURIComponent(c.song)
-        : 'https://lrclib.net/api/search?track_name=' + encodeURIComponent(c.song);
-      const r = await fetchTimeout(url, 8000);
-      if (r.ok) {
-        const j = await r.json();
-        const hit = Array.isArray(j) ? j[0] : j;
-        const ly = hit && (hit.plainLyrics || hit.syncedLyrics);
-        if (ly && ly.trim()) { el.textContent = cleanLyrics(ly); return; }
-      }
-    } catch (e) {}
-    try {
-      const r2 = await fetchTimeout('https://api.lyrics.ovh/v1/' +
-        encodeURIComponent(c.artist || 'various') + '/' + encodeURIComponent(c.song), 8000);
-      if (r2.ok) {
-        const j2 = await r2.json();
-        if (j2.lyrics && j2.lyrics.trim()) { el.textContent = cleanLyrics(j2.lyrics); return; }
-      }
-    } catch (e) {}
-  }
-  el.textContent = '😞 Letra no disponible para este tema.';
-}
-
-/* Pulsación larga sobre un tema de la playlist */
-let lpTimer = null, lpStart = null;
-plList.addEventListener('pointerdown', e => {
-  const item = e.target.closest('.pl-item');
-  if (!item || e.target.closest('.pl-btn')) return;
-  lpStart = [e.clientX, e.clientY];
-  const idx = +item.dataset.idx;
-  clearTimeout(lpTimer);
-  lpTimer = setTimeout(() => {
-    lpTimer = null;
-    const t = playlist[idx];
-    if (t) {
-      if (navigator.vibrate) navigator.vibrate(40);
-      openInfo(t);
+  function addError(msg) {
+    const stamp = new Date().toLocaleString('es-ES', { hour12: false });
+    const entry = '[' + stamp + '] ' + msg;
+    app.errors.push(entry);
+    while (app.errors.length > 80) app.errors.shift();
+    if (typeof window !== 'undefined') {
+      try { localStorage.setItem('mixcasete_errors', JSON.stringify(app.errors)); } catch (e) {}
     }
-  }, 550);
-});
-['pointerup', 'pointercancel'].forEach(ev =>
-  plList.addEventListener(ev, () => { clearTimeout(lpTimer); lpTimer = null; lpStart = null; }));
-plList.addEventListener('pointermove', e => {
-  if (!lpStart) return;
-  if (Math.hypot(e.clientX - lpStart[0], e.clientY - lpStart[1]) > 12) {
-    clearTimeout(lpTimer); lpTimer = null; lpStart = null;
-  }
-});
-plList.addEventListener('contextmenu', e => e.preventDefault());
-
-/* ============ COVER ZOOM ============ */
-const cov = { s: 1, tx: 0, ty: 0 };
-function applyCov() {
-  coverFullImg.style.transform = 'translate(' + cov.tx + 'px,' + cov.ty + 'px) scale(' + cov.s + ')';
-  zoomLevelEl.textContent = Math.round(cov.s * 100) + '%';
-}
-function clampCov() {
-  const maxX = (cov.s - 1) * coverFullImg.clientWidth / 2;
-  const maxY = (cov.s - 1) * coverFullImg.clientHeight / 2;
-  cov.tx = Math.max(-maxX, Math.min(maxX, cov.tx));
-  cov.ty = Math.max(-maxY, Math.min(maxY, cov.ty));
-}
-function setZoom(ns) {
-  cov.s = Math.max(1, Math.min(6, ns));
-  if (cov.s === 1) { cov.tx = 0; cov.ty = 0; }
-  clampCov(); applyCov();
-}
-const coverMenuOverlay = document.getElementById('coverMenuOverlay');
-function openCoverZoom() {
-  coverFullImg.src = albumImg.src;
-  cov.s = 1; cov.tx = 0; cov.ty = 0; applyCov();
-  coverOverlay.classList.add('open');
-}
-albumSquare.addEventListener('click', () => {
-  if (!current.id) { openCoverZoom(); return; }
-  coverMenuOverlay.classList.add('open');
-});
-coverMenuOverlay.onclick = e => { if (e.target === coverMenuOverlay) coverMenuOverlay.classList.remove('open'); };
-document.getElementById('coverMenuCancel').onclick = () => coverMenuOverlay.classList.remove('open');
-document.getElementById('coverMenuArt').onclick = () => { coverMenuOverlay.classList.remove('open'); openCoverZoom(); };
-document.getElementById('coverMenuLyrics').onclick = () => { coverMenuOverlay.classList.remove('open'); openInfo(current); };
-document.getElementById('coverClose').onclick = () => coverOverlay.classList.remove('open');
-document.getElementById('zoomIn').onclick = () => setZoom(cov.s + 0.5);
-document.getElementById('zoomOut').onclick = () => setZoom(cov.s - 0.5);
-document.getElementById('zoomReset').onclick = () => setZoom(1);
-
-const pts = new Map();
-let pinch0 = 0, s0 = 1, pan0 = null;
-coverFullImg.addEventListener('pointerdown', e => {
-  coverFullImg.setPointerCapture(e.pointerId);
-  pts.set(e.pointerId, [e.clientX, e.clientY]);
-  if (pts.size === 1) pan0 = [e.clientX, e.clientY, cov.tx, cov.ty];
-  if (pts.size === 2) {
-    const a = [...pts.values()];
-    pinch0 = Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]);
-    s0 = cov.s; pan0 = null;
-  }
-});
-coverFullImg.addEventListener('pointermove', e => {
-  if (!pts.has(e.pointerId)) return;
-  pts.set(e.pointerId, [e.clientX, e.clientY]);
-  if (pts.size === 1 && pan0) {
-    cov.tx = pan0[2] + (e.clientX - pan0[0]);
-    cov.ty = pan0[3] + (e.clientY - pan0[1]);
-    clampCov(); applyCov();
-  } else if (pts.size === 2 && pinch0) {
-    const a = [...pts.values()];
-    setZoom(s0 * Math.hypot(a[0][0] - a[1][0], a[0][1] - a[1][1]) / pinch0);
-  }
-});
-['pointerup', 'pointercancel'].forEach(ev =>
-  coverFullImg.addEventListener(ev, e => { pts.delete(e.pointerId); pan0 = null; pinch0 = 0; }));
-
-/* ============ CACHE ============ */
-const CACHE_KEY = 'mixcasete_cache_v1';
-let cache = {};
-try { cache = JSON.parse(localStorage.getItem(CACHE_KEY)) || {}; } catch (e) {}
-function cacheSave() { try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) {} }
-function cacheGet(id) { return cache[id]; }
-function cacheSet(id, patch) {
-  cache[id] = Object.assign(cache[id] || {}, patch);
-  cache[id].t = Date.now();
-  cacheSave();
-}
-const STREAM_TTL = 3 * 3600 * 1000;
-
-/* ============ PLAYLIST ============ */
-const PL_KEY = 'mixcasete_playlist_v1';
-let playlist = [];
-try { playlist = JSON.parse(localStorage.getItem(PL_KEY)) || []; } catch (e) { playlist = []; }
-
-let backupTimer = null;
-function savePL() {
-  localStorage.setItem(PL_KEY, JSON.stringify(playlist));
-  updatePlBar(); renderPL();
-  if (HAS_BRIDGE) {
-    clearTimeout(backupTimer);
-    backupTimer = setTimeout(() => {
-      try { Android.exportPlaylist(playlistJson()); } catch (e) {}
-    }, 1500);
-  }
-}
-function updatePlBar() {
-  document.getElementById('plBarText').textContent =
-    '📼 PLAYLIST · ' + playlist.length + (playlist.length === 1 ? ' TEMA' : ' TEMAS');
-  document.getElementById('plCount').textContent = playlist.length;
-}
-function renderPL() {
-  if (!playlist.length) {
-    plList.innerHTML = '<div class="result-status">Playlist vacía.<br>Pon música y pulsa ● REC para grabar y descargar temas 🎙️</div>';
-    return;
-  }
-  plList.innerHTML = '';
-  playlist.forEach((t, i) => {
-    const div = document.createElement('div');
-    div.className = 'pl-item' + (t.id === current.id ? ' current' : '');
-    div.dataset.idx = i;
-    div.innerHTML =
-      '<img src="' + (t.thumb || ('https://i.ytimg.com/vi/' + t.id + '/hqdefault.jpg')) + '">' +
-      '<div class="pl-info">' +
-        '<div class="pl-title">' + t.title + (t.local ? ' 💾' : '') + '</div>' +
-        '<div class="pl-author">' + (t.author || 'YouTube') + '</div>' +
-      '</div>' +
-      '<div class="pl-actions">' +
-        '<button class="pl-btn play" data-act="play" data-i="' + i + '">▶</button>' +
-        '<button class="pl-btn" data-act="up" data-i="' + i + '">▲</button>' +
-        '<button class="pl-btn" data-act="down" data-i="' + i + '">▼</button>' +
-        '<button class="pl-btn del" data-act="del" data-i="' + i + '">✕</button>' +
-      '</div>';
-    plList.appendChild(div);
-  });
-}
-
-plList.addEventListener('click', e => {
-  const btn = e.target.closest('.pl-btn');
-  if (!btn) return;
-  const i = +btn.dataset.i, act = btn.dataset.act;
-  if (act === 'play') { const t = playlist[i]; closePL(); playById(t.id, t.title, t.thumb, t.author); }
-  else if (act === 'up' && i > 0) { [playlist[i - 1], playlist[i]] = [playlist[i], playlist[i - 1]]; savePL(); }
-  else if (act === 'down' && i < playlist.length - 1) { [playlist[i + 1], playlist[i]] = [playlist[i], playlist[i + 1]]; savePL(); }
-  else if (act === 'del') { playlist.splice(i, 1); savePL(); }
-});
-document.getElementById('plClear').onclick = () => {
-  if (playlist.length && confirm('¿Vaciar toda la playlist?')) { playlist = []; savePL(); }
-};
-const plOverlay = document.getElementById('plOverlay');
-document.getElementById('plOpen').onclick = () => { renderPL(); plOverlay.classList.add('open'); };
-plOverlay.onclick = e => { if (e.target === plOverlay) plOverlay.classList.remove('open'); };
-function closePL() { plOverlay.classList.remove('open'); }
-
-/* ============ EXPORT / IMPORT ============ */
-function playlistJson() {
-  return JSON.stringify({ app: 'MixCasete', version: 1,
-    exported: new Date().toISOString(), tracks: playlist });
-}
-function applyImport(text) {
-  try {
-    const d = JSON.parse(text);
-    const tracks = Array.isArray(d) ? d : (d.tracks || []);
-    const clean = tracks.filter(t => t && t.id).map(t => ({
-      id: t.id, title: t.title || '', author: t.author || '',
-      thumb: t.thumb || '', local: t.local || '' }));
-    if (!clean.length) { flashTitle('⚠ Archivo sin temas'); return; }
-    playlist = clean;
-    savePL();
-    flashTitle('📼 Playlist importada (' + clean.length + ' temas)');
-  } catch (e) { flashTitle('⚠ Archivo no válido'); }
-}
-document.getElementById('plExport').onclick = () => {
-  const json = playlistJson();
-  if (HAS_BRIDGE) {
-    try { Android.exportPlaylist(json); } catch (e) { flashTitle('⚠ No se pudo exportar'); }
-  } else {
-    const b = new Blob([json], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(b);
-    a.download = 'MixCasete_playlist.json';
-    a.click();
-    URL.revokeObjectURL(a.href);
-    flashTitle('⬆ Playlist exportada');
-  }
-};
-document.getElementById('plImport').onclick = () => {
-  if (HAS_BRIDGE) { try { Android.openPlaylistFile(); } catch (e) {} }
-  else document.getElementById('fileImport').click();
-};
-document.getElementById('fileImport').onchange = e => {
-  const f = e.target.files[0];
-  if (!f) return;
-  const r = new FileReader();
-  r.onload = () => applyImport(r.result);
-  r.readAsText(f);
-  e.target.value = '';
-};
-window.onPlaylistImported = text => applyImport(text);
-window.onExported = ok => flashTitle(ok ? '⬆ Guardada en Descargas ✔' : '⚠ No se pudo exportar');
-
-/* ============ TÍTULOS ============ */
-let flashTimer = null;
-function showTitle(t) {
-  titleEl.textContent = t;
-  if (tvTrackTitle) tvTrackTitle.textContent = t;
-  if (tvTitleBig)   tvTitleBig.textContent   = t;
-}
-function setRealTitle(t) { if (t) { current.title = t; titleEl.textContent = t; syncTvView(); } }
-function flashTitle(msg) {
-  showTitle(msg);
-  clearTimeout(flashTimer);
-  flashTimer = setTimeout(() => { showTitle(current.title || '—'); }, 2200);
-}
-
-/* ============ REC ============ */
-function recToPlaylist() {
-  const dot = document.getElementById('plRecDot');
-  if (!current.id || !current.title) { flashTitle('⚠️ Nada sonando para grabar'); return; }
-  if (playlist.some(t => t.id === current.id)) {
-    dot.classList.add('on'); setTimeout(() => dot.classList.remove('on'), 900);
-    flashTitle('● Ya está en la playlist'); return;
-  }
-  playlist.push({ ...current });
-  savePL();
-  dot.classList.add('on'); setTimeout(() => dot.classList.remove('on'), 1400);
-  flashTitle('● REC → tema guardado ✔');
-  if (navigator.vibrate) navigator.vibrate([40, 60, 40]);
-  if (HAS_BRIDGE) {
-    try { Android.downloadYT(current.id, current.title); flashTitle('⏬ Descargando tema...'); } catch (e) {}
-  }
-}
-
-/* ============ RED ============ */
-const PROXIES = [
-  u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
-  u => 'https://api.codetabs.com/v1/proxy?quest=' + encodeURIComponent(u)
-];
-
-function fetchTimeout(url, ms = 6000, init) {
-  return new Promise((resolve, reject) => {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => { ctrl.abort(); reject(new Error('timeout')); }, ms);
-    fetch(url, Object.assign({ signal: ctrl.signal }, init || {}))
-      .then(r => { clearTimeout(t); resolve(r); })
-      .catch(e => { clearTimeout(t); reject(e); });
-  });
-}
-function anyPromise(arr) {
-  return new Promise((res, rej) => {
-    let pending = arr.length, lastErr;
-    if (!pending) return rej(new Error('vacío'));
-    arr.forEach(p => p.then(v => res(v)).catch(e => { lastErr = e; if (--pending === 0) rej(lastErr); }));
-  });
-}
-function withTimeout(p, ms) {
-  return new Promise((res, rej) => {
-    const t = setTimeout(() => rej(new Error('global timeout')), ms);
-    p.then(v => { clearTimeout(t); res(v); }, e => { clearTimeout(t); rej(e); });
-  });
-}
-function fetchSmart(url, ms = 6000) {
-  const routes = [url];
-  PROXIES.forEach(p => routes.push(p(url)));
-  return anyPromise(routes.map(u =>
-    fetchTimeout(u, ms).then(r => { if (!r.ok) throw new Error(r.status); return r; })
-  ));
-}
-
-/* ============ HELPERS ============ */
-function fmt(sec) {
-  if (!sec && sec !== 0) return '';
-  const m = Math.floor(sec / 60), s = Math.floor(sec % 60);
-  return m + ':' + String(s).padStart(2, '0');
-}
-function parseDur(str) {
-  if (!str) return 0;
-  let sec = 0;
-  String(str).split(':').map(Number).forEach(p => sec = sec * 60 + p);
-  return sec;
-}
-function setArtist(a) {
-  const final = a || guessArtist(current.title) || '';
-  current.author = final || current.author;
-  artistBrand.textContent = final || '@Mix.Casete';
-  if (tvArtistBrand) tvArtistBrand.textContent = final || '@Mix.Casete';
-  if (tvArtistBig)   tvArtistBig.textContent   = final || '@Mix.Casete';
-}
-function guessArtist(title) {
-  const m = String(title || '').split(' - ');
-  return m.length > 1 ? m[0].trim() : '';
-}
-function setReels(on) {
-  reelL.classList.toggle('playing', on);
-  reelR.classList.toggle('playing', on);
-  if (tvReelLeft)    tvReelLeft.classList.toggle('playing', on);
-  if (tvReelRight)   tvReelRight.classList.toggle('playing', on);
-  if (tvReelBigLeft) tvReelBigLeft.classList.toggle('playing', on);
-  if (tvReelBigRight)tvReelBigRight.classList.toggle('playing', on);
-}
-function setLed(m) {
-  modeLed.className = 'led' + (m === 'stream' ? ' stream' : m === 'native' ? ' native' : (m === 'iframe' || m === 'embed' || m === 'bridge') ? ' bridge' : '');
-  updateTvStatusFromMode();
-}
-function extractVideoId(str) {
-  str = (str || '').trim();
-  if (/^[\w-]{11}$/.test(str)) return str;
-  const m = str.match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);
-  return m ? m[1] : null;
-}
-
-/* ============ LISTAS VIVAS ============ */
-let listsPromise = null;
-function loadLists() {
-  if (listsPromise) return listsPromise;
-  listsPromise = (async () => {
-    let piped = ['https://pipedapi.kavin.rocks', 'https://api.piped.private.coffee'];
-    let inv = ['https://inv.nadeko.net', 'https://invidious.f5.si'];
-    try {
-      const r = await fetchSmart('https://piped-instances.kavin.rocks/', 5000);
-      const j = await r.json();
-      const apis = (Array.isArray(j) ? j : []).map(x => x.api_url).filter(Boolean);
-      if (apis.length) piped = apis;
-    } catch (e) {}
-    try {
-      const r = await fetchSmart('https://api.invidious.io/instances.json?sort_by=health', 5000);
-      const j = await r.json();
-      const apis = (Array.isArray(j) ? j : [])
-        .filter(x => x && x[1] && x[1].api && x[1].cors !== false)
-        .map(x => 'https://' + x[0]);
-      if (apis.length) inv = apis;
-    } catch (e) {}
-    debug('Instancias vivas: ' + piped.length + ' Piped · ' + inv.length + ' Invidious');
-    return { piped, inv };
-  })();
-  return listsPromise;
-}
-
-/* ============ NATIVA WEB ============ */
-const YT_CLIENTS = [
-  { clientName: 'ANDROID', clientVersion: '19.09.37', androidSdkVersion: 30,
-    userAgent: 'com.google.android.youtube/19.09.37 (Linux; U; Android 11; en_US) gzip' },
-  { clientName: 'ANDROID_MUSIC', clientVersion: '7.16.50', androidSdkVersion: 30,
-    userAgent: 'com.google.android.apps.youtube.music/7.16.50 (Linux; U; Android 11; en_US) gzip' }
-];
-
-async function youtubeNativeStream(id) {
-  for (const client of YT_CLIENTS) {
-    try {
-      const r = await fetchTimeout('https://www.youtube.com/youtubei/v1/player?prettyPrint=false', 8000, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'User-Agent': client.userAgent },
-        body: JSON.stringify({
-          context: { client: Object.assign({ hl: 'es', gl: 'US' }, client) },
-          videoId: id,
-          playbackContext: { contentPlaybackContext: { html5Preference: 'HTML5_PREF_WANTS' } },
-          params: '8AEB'
-        })
-      });
-      if (!r.ok) continue;
-      const j = await r.json();
-      const sd = j?.streamingData || {};
-      const all = [].concat(sd.formats || [], sd.adaptiveFormats || []);
-      const cands = all
-        .filter(f => f.url && /audio|mp4/.test(f.mimeType || ''))
-        .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
-      const pick = cands.find(f => /audio\/mp4/.test(f.mimeType || '')) || cands[0];
-      if (pick) {
-        const vd = j.videoDetails || {};
-        return {
-          url: pick.url, title: vd.title, author: vd.author || '',
-          thumb: (vd.thumbnail?.thumbnails || []).slice(-1)[0]?.url ||
-                 ('https://i.ytimg.com/vi/' + id + '/hqdefault.jpg')
-        };
-      }
-    } catch (e) {}
-  }
-  return null;
-}
-
-/* ============ COVER HQ ============ */
-async function bestCoverCandidates(id, title) {
-  const urls = [];
-  try {
-    const r = await fetchTimeout('https://itunes.apple.com/search?media=music&limit=1&term=' +
-      encodeURIComponent(title), 4000);
-    const j = await r.json();
-    const art = j?.results?.[0]?.artworkUrl100;
-    if (art) {
-      const base = art.replace('100x100bb', '{S}x{S}bb');
-      [2000, 1000, 600].forEach(s => urls.push(base.replace('{S}', s)));
-    }
-  } catch (e) {}
-  urls.push('https://i.ytimg.com/vi/' + id + '/maxresdefault.jpg');
-  urls.push('https://i.ytimg.com/vi/' + id + '/sddefault.jpg');
-  urls.push('https://i.ytimg.com/vi/' + id + '/hqdefault.jpg');
-  return urls;
-}
-function loadFirstGood(urls, minW = 320) {
-  return new Promise(resolve => {
-    let i = 0;
-    const next = () => {
-      if (i >= urls.length) { resolve(urls[urls.length - 1]); return; }
-      const u = urls[i++];
-      const img = new Image();
-      img.onload = () => (img.naturalWidth >= minW) ? resolve(u) : next();
-      img.onerror = next;
-      img.src = u;
-    };
-    next();
-  });
-}
-async function setCoverHQ(id, title) {
-  const c = cacheGet(id);
-  if (c && c.cover) {
-    albumImg.src = c.cover; current.thumb = c.cover;
-    if (tvCoverImg) tvCoverImg.src = c.cover;
-  }
-  const urls = await bestCoverCandidates(id, title);
-  const good = await loadFirstGood(urls);
-  albumImg.src = good;
-  if (tvCoverImg) tvCoverImg.src = good;
-  current.thumb = good;
-  cacheSet(id, { cover: good });
-  const item = playlist.find(t => t.id === id);
-  if (item) { item.thumb = good; savePL(); }
-}
-
-async function enrichMeta(id, fallbackTitle) {
-  let finalTitle = fallbackTitle, finalAuthor = '';
-  try {
-    const r = await fetchTimeout('https://noembed.com/embed?url=' +
-      encodeURIComponent('https://www.youtube.com/watch?v=' + id), 4000);
-    const j = await r.json();
-    if (j.title) finalTitle = j.title;
-    if (j.author_name) finalAuthor = j.author_name;
-  } catch (e) {}
-  setRealTitle(finalTitle);
-  return { title: finalTitle, author: finalAuthor };
-}
-
-/* ============ BÚSQUEDA ============ */
-async function pipedSearch(q) {
-  const { piped } = await loadLists();
-  for (const base of piped.slice(0, 3)) {
-    try {
-      const j = await (await fetchSmart(base + '/search?q=' + encodeURIComponent(q) + '&filter=music_songs', 5000)).json();
-      const items = (j.items || []).filter(i => i.type === 'stream').slice(0, 15)
-        .map(i => ({ id: (i.url || '').replace('/watch?v=', ''), title: i.title,
-          author: i.uploaderName || '', dur: i.duration, thumb: i.thumbnail }));
-      if (items.length) return items;
-    } catch (e) {}
-  }
-  return null;
-}
-async function invidiousSearch(q) {
-  const { inv } = await loadLists();
-  for (const base of inv.slice(0, 3)) {
-    try {
-      const j = await (await fetchSmart(base + '/api/v1/search?q=' + encodeURIComponent(q) + '&type=music', 5000)).json();
-      const items = (Array.isArray(j) ? j : []).filter(i => i.type === 'video' && i.videoId).slice(0, 15)
-        .map(i => ({ id: i.videoId, title: i.title, author: i.author || '',
-          dur: i.lengthSeconds, thumb: 'https://i.ytimg.com/vi/' + i.videoId + '/hqdefault.jpg' }));
-      if (items.length) return items;
-    } catch (e) {}
-  }
-  return null;
-}
-async function ytHtmlSearch(q) {
-  const target = 'https://www.youtube.com/results?search_query=' +
-    encodeURIComponent(q) + '&sp=EgIQAQ%253D%253D';
-  const html = await (await fetchSmart(target, 8000)).text();
-  const m = html.match(/var ytInitialData = (.+?);<\/script>/s);
-  if (!m) return null;
-  const data = JSON.parse(m[1]);
-  const sections = data?.contents?.twoColumnSearchResultsRenderer
-    ?.primaryContents?.sectionListRenderer?.contents || [];
-  const items = [];
-  for (const sec of sections) {
-    const list = sec?.itemSectionRenderer?.contents || [];
-    for (const c of list) {
-      const v = c?.videoRenderer;
-      if (v && v.videoId) {
-        items.push({
-          id: v.videoId,
-          title: ((v.title?.runs || []).map(r => r.text).join('')) || v.title?.simple || '',
-          author: v.ownerText?.simple || ((v.longBylineText?.runs || [])[0]?.text ?? ''),
-          dur: parseDur(v.lengthText?.simple),
-          thumb: (v.thumbnail?.thumbnails || []).slice(-1)[0]?.url ||
-                 ('https://i.ytimg.com/vi/' + v.videoId + '/hqdefault.jpg')
-        });
-      }
-      if (items.length >= 15) break;
-    }
-    if (items.length) break;
-  }
-  return items.length ? items : null;
-}
-async function jinaSearch(q) {
-  const target = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
-  const r = await fetchTimeout('https://r.jina.ai/' + target, 12000);
-  if (!r.ok) throw new Error('jina ' + r.status);
-  const txt = await r.text();
-  const re = /\[([^\]\n]{3,120})\]\((?:https?:\/\/(?:www\.)?youtube\.com\/watch\?v=|https?:\/\/youtu\.be\/)([\w-]{11})[^)]*\)/g;
-  const seen = new Set();
-  const items = [];
-  let m;
-  while ((m = re.exec(txt)) && items.length < 15) {
-    const title = m[1].trim();
-    const id = m[2];
-    if (seen.has(id)) continue;
-    if (/^(YouTube|youtube|Watch later|Save)$/i.test(title)) continue;
-    seen.add(id);
-    items.push({ id, title, author: guessArtist(title) || 'YouTube', dur: 0,
-      thumb: 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg' });
-  }
-  return items.length ? items : null;
-}
-
-async function searchMusic(q) {
-  const list = document.getElementById('resultsList');
-  list.innerHTML = '<div class="result-status">⏳ Buscando en YouTube...</div>';
-  try {
-    const items = await withTimeout(anyPromise([
-      pipedSearch(q), invidiousSearch(q), ytHtmlSearch(q), jinaSearch(q)
-    ].map(p => p.then(r => { if (!r || !r.length) throw new Error('x'); return r; }))), 13000);
-    list.innerHTML = '';
-    items.forEach(it => {
-      const div = document.createElement('div');
-      div.className = 'result-item';
-      div.innerHTML =
-        '<img src="' + it.thumb + '" loading="lazy">' +
-        '<div class="result-info">' +
-          '<div class="result-title">' + it.title + '</div>' +
-          '<div class="result-meta">' + it.author + (it.dur ? ' · ' + fmt(it.dur) : '') + '</div>' +
-        '</div>';
-      div.onclick = () => { closeSearch(); playById(it.id, it.title, it.thumb, it.author); };
-      list.appendChild(div);
-    });
-  } catch (e) {
-    list.innerHTML = '<div class="result-status">⚠️ Búsqueda saturada.<br>Pega un enlace de YouTube arriba y dale ▶</div>';
-  }
-}
-
-/* ============ STREAMS WEB ============ */
-function pickFormats(j, id) {
-  if (!j) return null;
-  const thumb = 'https://i.ytimg.com/vi/' + id + '/hqdefault.jpg';
-  const aud = (j.audioStreams || j.adaptiveFormats || [])
-    .filter(f => f.url && ((f.mimeType || f.type || '').startsWith('audio')))
-    .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
-  if (aud.length) return { url: aud[0].url, title: j.title, author: j.author || j.uploader || '', thumb };
-  const prog = (j.formatStreams || []).find(f => f.url);
-  if (prog) return { url: prog.url, title: j.title, author: j.author || j.uploader || '', thumb };
-  return null;
-}
-async function pipedStream(id) {
-  const { piped } = await loadLists();
-  for (const base of piped.slice(0, 4)) {
-    try {
-      const j = await (await fetchSmart(base + '/streams/' + id, 5000)).json();
-      const out = pickFormats(j, id);
-      if (out) { debug('Stream vía Piped'); return out; }
-    } catch (e) {}
-  }
-  return null;
-}
-async function invidiousStream(id) {
-  const { inv } = await loadLists();
-  for (const base of inv.slice(0, 4)) {
-    try {
-      const j = await (await fetchSmart(base + '/api/v1/videos/' + id, 5000)).json();
-      const out = pickFormats(j, id);
-      if (out) { debug('Stream vía Invidious'); return out; }
-    } catch (e) {}
-  }
-  return null;
-}
-function extractJson(txt) {
-  const a = txt.indexOf('{');
-  const b = txt.lastIndexOf('}');
-  if (a === -1 || b === -1 || b <= a) return null;
-  try { return JSON.parse(txt.slice(a, b + 1)); } catch (e) { return null; }
-}
-async function jinaStream(id) {
-  const { piped, inv } = await loadLists();
-  const all = inv.slice(0, 2).map(b => ({ b, p: '/api/v1/videos/' }))
-    .concat(piped.slice(0, 2).map(b => ({ b, p: '/streams/' })));
-  for (const { b, p } of all) {
-    try {
-      const r = await fetchTimeout('https://r.jina.ai/' + b + p + id, 10000);
-      if (!r.ok) continue;
-      const out = pickFormats(extractJson(await r.text()), id);
-      if (out) { debug('Stream vía Jina'); return out; }
-    } catch (e) {}
-  }
-  return null;
-}
-
-function raceStreams(id, ms) {
-  return withTimeout(
-    anyPromise([youtubeNativeStream(id), pipedStream(id), invidiousStream(id), jinaStream(id)]
-      .map(p => p.then(r => { if (!r) throw new Error('x'); return r; }))),
-    ms
-  ).catch(() => null);
-}
-
-/* ============ REPRODUCCIÓN ============ */
-function startStream(url, title, src) {
-  soundFab.classList.remove('show');
-  const displayName = (src && src.title) || title || 'Mix.Casete';
-
-  if (HAS_BRIDGE) {
-    mode = 'native';
-    setLed('native');
-    setRealTitle(displayName);
-    if (src && src.author) setArtist(src.author);
-    nativePos = 0;
-    debug('nativePlay → ' + (url ? url.slice(0, 60) : '(URL VACÍA)'));
-    try { Android.nativePlay(url, displayName); } catch (e) { debug('❌ nativePlay lanzó excepción: ' + e); }
-    return;
   }
 
-  audio.src = url;
-  audio.volume = 1.0;
-  mode = 'stream'; setLed('stream');
-  setRealTitle(displayName);
-  if (src && src.author) setArtist(src.author);
-  audio.play().then(() => {
-    debug('🔊 SONANDO');
-  }).catch(() => {
-    debug('Autoplay bloqueado: pulsa 🔊');
-    soundFab.classList.add('show');
-  });
-}
-
-async function playById(id, title, thumb, author) {
-  const my = ++playToken;
-  current = { id, title: title || '', author: author || '', thumb: thumb || '' };
-  showTitle('⏳ Cargando cinta...');
-  setArtist(author);
-  renderPL();
-  syncTvView();
-
-  const c = cacheGet(id);
-  if (c) {
-    if (c.title && !title) setRealTitle(c.title);
-    if (c.author) setArtist(c.author);
-    if (c.cover) {
-      albumImg.src = c.cover; current.thumb = c.cover;
-      if (tvCoverImg) tvCoverImg.src = c.cover;
-    }
-  } else if (thumb) {
-    albumImg.src = thumb;
-    if (tvCoverImg) tvCoverImg.src = thumb;
-  }
-  setCoverHQ(id, title || (c && c.title) || '');
-
-  const localItem = playlist.find(t => t.id === id);
-  if (localItem && localItem.local) {
-    debug('Reproduciendo desde almacenamiento local 💾');
-    startStream('file://' + localItem.local, localItem.title || title, localItem);
-    return;
+  function getErrorsText() {
+    return app.errors.length ? app.errors.join('\n\n') : 'No hay errores registrados.';
   }
 
-  if (c && c.s && Date.now() - (c.t || 0) < STREAM_TTL) {
-    debug('Stream desde cache');
-    startStream(c.s, c.title || title, c);
-    return;
-  }
-
-  if (HAS_BRIDGE) {
-    debug('Java: extrayendo audio de YouTube...');
-    const s = await bridgeGetStream(id);
-    if (my !== playToken) return;
-    if (s && s.url) {
-      cacheSet(id, { s: s.url, title: s.title || title, author: s.author || '' });
-      startStream(s.url, s.title || title, s);
+  function showErrorsModal() {
+    const text = getErrorsText();
+    const w = window.open('', '_blank', 'width=420,height=620');
+    if (!w) {
+      alert(text);
       return;
     }
+    w.document.write('<html><head><meta charset="UTF-8"><title>Mix.Casete - Errores</title>' +
+      '<style>body{font-family:system-ui,sans-serif;padding:18px;background:#111;color:#eee;}pre{white-space:pre-wrap;word-break:break-word;}button{margin-top:12px;padding:10px 16px;border:none;border-radius:8px;background:#f7a929;color:#111;font-weight:700;cursor:pointer;}</style></head>' +
+      '<body><h3>Lista de errores</h3><pre>' + escapeHtml(text) + '</pre><button onclick="navigator.clipboard.writeText(document.querySelector(\'pre\').innerText);this.textContent=\'Copiado\';setTimeout(()=>this.textContent=\'Copiar\',1200);">Copiar</button></body></html>');
+    w.document.close();
   }
 
-  debug('Buscando stream web...');
-  const src = await raceStreams(id, 12000);
-  if (my !== playToken) return;
-  if (src) {
-    cacheSet(id, { s: src.url, title: src.title || title, author: src.author || '' });
-    startStream(src.url, src.title || title, src);
-    return;
+  function escapeHtml(str) {
+    return String(str).replace(/[&<>"']/g, s => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[s]));
   }
 
-  debug('Sin stream → WebView de respaldo');
-  fbLoad(id);
-  enrichMeta(id, title).then(meta => { if (my === playToken) setArtist(meta.author || author); });
-}
-
-function autoNext() {
-  setReels(false);
-  const idx = playlist.findIndex(t => t.id === current.id);
-  if (idx > -1 && idx < playlist.length - 1) {
-    const n = playlist[idx + 1];
-    playById(n.id, n.title, n.thumb, n.author);
-  } else { setLed('none'); showTitle('⏹ Fin de la cinta'); }
-}
-
-/* ============ CONTROLES ============ */
-function doPlay() {
-  if (mode === 'native') { try { Android.nativeResume(); } catch (e) {} startNativeClock(); }
-  else if (mode === 'bridge') { fbPlay(); }
-  else if (mode === 'stream') { audio.play().catch(() => flashTitle('🔊 Pulsa ▶ de nuevo')); }
-  setReels(true);
-  soundFab.classList.remove('show');
-  isPlayingFlag = true;
-  updateTvStatusFromMode();
-}
-function doPause() {
-  if (mode === 'native') { try { Android.nativePause(); } catch (e) {} stopNativeClock(); }
-  else if (mode === 'bridge') { fbPause(); }
-  else if (mode === 'stream') { audio.pause(); }
-  setReels(false);
-  isPlayingFlag = false;
-  updateTvStatusFromMode();
-}
-function doStop() {
-  if (mode === 'native') { try { Android.nativeStop(); } catch (e) {} stopNativeClock(); nativePos = 0; }
-  else if (mode === 'bridge') { fbStop(); embedPos = 0; }
-  else if (mode === 'stream') { audio.pause(); audio.currentTime = 0; tapePack.style.width = '42%'; if (tvTapePack) tvTapePack.style.width = '42%'; }
-  setReels(false);
-  soundFab.classList.remove('show');
-  isPlayingFlag = false;
-  updateTvStatusFromMode();
-}
-function doSeek(delta) {
-  if (mode === 'native') {
-    nativePos = Math.max(0, nativePos + delta);
-    try { Android.nativeSeek(nativePos); } catch (e) {}
+  function loadStoredErrors() {
+    try {
+      const raw = localStorage.getItem('mixcasete_errors');
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) app.errors = arr.slice(-80);
+      }
+    } catch (e) {}
   }
-  else if (mode === 'bridge') {
-    embedPos = Math.max(0, embedPos + delta);
-    fbSeek(embedPos);
-  }
-  else if (mode === 'stream') {
-    audio.currentTime = Math.max(0, Math.min(audio.duration || 0, audio.currentTime + delta));
-  }
-}
 
-document.querySelectorAll('.piano-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.piano-btn').forEach(b => b.classList.remove('active'));
-    const a = btn.dataset.action;
-    if (a === 'record') { recToPlaylist(); return; }
-    if (a === 'play') { btn.classList.add('active'); doPlay(); }
-    else if (a === 'pause') { btn.classList.add('active'); doPause(); }
-    else if (a === 'stop') { btn.classList.add('active'); doStop(); }
-    else if (a === 'rew') { doSeek(-10); }
-    else if (a === 'ff') { doSeek(10); }
-    if (navigator.vibrate) navigator.vibrate(25);
+  loadStoredErrors();
+
+  window.onNativePlayerEvent = function (event) {
+    if (event === 'playing') {
+      isPlayingFlag = true;
+      setReels(true); startNativeClock(); debug('🔊 SONANDO (nativo)');
+    } else if (event === 'paused') {
+      isPlayingFlag = false;
+      setReels(false); stopNativeClock();
+    } else if (event === 'ended') {
+      isPlayingFlag = false;
+      setReels(false); stopNativeClock(); autoNext();
+    } else if (event === 'error') {
+      isPlayingFlag = false;
+      debug('⚠ Error de audio nativo');
+      addError('Error de audio nativo: ' + (current && current.title ? current.title : 'Tema desconocido') + ' | modo=' + mode + ' | url=' + (current && current.id ? 'https://www.youtube.com/watch?v=' + current.id : 'n/a'));
+      setReels(false); stopNativeClock();
+      if (current && current.id) {
+        delete cache[current.id];
+        try { localStorage.setItem(CACHE_KEY, JSON.stringify(cache)); } catch (e) {}
+      }
+      setTimeout(() => {
+        if (current && current.id) {
+          debug('Reintentando stream fresco para: ' + current.id);
+          playById(current.id, current.title, current.thumb, current.author);
+        }
+      }, 1200);
+    }
+    updateTvStatusFromMode();
+  };
+
+  const modeLed = document.getElementById('modeLed');
+  const titleEl = document.getElementById('trackTitle');
+  const cassetteBrand = document.getElementById('cassetteBrand');
+  const coverImg = document.getElementById('coverImg');
+  const tapePack = document.getElementById('tapePack');
+  const reelLeft = document.getElementById('reelLeft');
+  const reelRight = document.getElementById('reelRight');
+  const sideLabelMin = document.getElementById('sideLabelMin');
+  const searchOverlay = document.getElementById('searchOverlay');
+  const plOverlay = document.getElementById('plOverlay');
+  const infoOverlay = document.getElementById('infoOverlay');
+  const coverOverlay = document.getElementById('coverOverlay');
+  const coverFullImg = document.getElementById('coverFullImg');
+  const coverZoomLevel = document.getElementById('coverZoomLevel');
+  const plErrorsBtn = document.getElementById('plErrorsBtn');
+
+  plErrorsBtn.addEventListener('click', showErrorsModal);
+
+  const audio = new Audio();
+  audio.preload = 'auto';
+  audio.crossOrigin = 'anonymous';
+
+  function setLed(kind) {
+    modeLed.className = 'led';
+    if (kind) modeLed.classList.add(kind);
+  }
+
+  function showTitle(t) {
+    titleEl.textContent = t;
+    if (tvTrackTitle) tvTrackTitle.textContent = t;
+    if (tvTitleBig) tvTitleBig.textContent = t;
+  }
+
+  function setRealTitle(t) { if (t) { current.title = t; titleEl.textContent = t; syncTvView(); } }
+
+  function debugTitle(msg) {
+    flashTitle(msg);
+    addError(msg);
+  }
+
+  function flashTitle(msg) {
+    showTitle(msg);
+    clearTimeout(flashTimer);
+    flashTimer = setTimeout(() => { showTitle(current.title || '—'); }, 2200);
+  }
+
+  const queries = {
+    plExport: document.getElementById('plExport'),
+    plImport: document.getElementById('plImport'),
+    plClear: document.getElementById('plClear'),
+    fileImport: document.getElementById('fileImport')
+  };
+
+  queries.plExport.addEventListener('click', () => {
+    const json = playlistJson();
+    if (HAS_BRIDGE) {
+      try { Android.exportPlaylist(json); } catch (e) { addError('Export playlist fail: ' + e.message); }
+    } else {
+      const b = new Blob([json], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = 'MixCasete_playlist.json';
+      a.click();
+      URL.revokeObjectURL(a.href);
+      flashTitle('⬆ Playlist exportada');
+    }
   });
-});
 
-document.querySelectorAll('.tv-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    if (btn.id === 'tvExit') return;
-    document.querySelectorAll('.tv-btn').forEach(b => b.classList.remove('active'));
-    const a = btn.dataset.tvAction;
-    if (a === 'record') { recToPlaylist(); return; }
-    if (a === 'play') { btn.classList.add('active'); doPlay(); }
-    else if (a === 'pause') { btn.classList.add('active'); doPause(); }
-    else if (a === 'stop') { btn.classList.add('active'); doStop(); }
-    else if (a === 'rew') { doSeek(-10); }
-    else if (a === 'ff') { doSeek(10); }
+  queries.plImport.addEventListener('click', () => {
+    if (HAS_BRIDGE) {
+      try { Android.openPlaylistFile(); } catch (e) { addError('Import playlist fail: ' + e.message); }
+    } else {
+      queries.fileImport.click();
+    }
   });
-});
 
-/* ============ CINTA VIVA ============ */
-audio.addEventListener('play',    () => { if (mode === 'stream') setReels(true); });
-audio.addEventListener('playing', () => { if (mode === 'stream') { setReels(true); debug('🔊 SONANDO'); isPlayingFlag = true; updateTvStatusFromMode(); } });
-audio.addEventListener('pause',   () => { if (mode === 'stream') { setReels(false); isPlayingFlag = false; updateTvStatusFromMode(); } });
-audio.addEventListener('waiting', () => debug('⏳ buffer...'));
-audio.addEventListener('timeupdate', () => {
-  if (audio.duration) {
-    const p = audio.currentTime / audio.duration;
-    const w = (42 - p * 30) + '%';
-    tapePack.style.width = w;
-    if (tvTapePack) tvTapePack.style.width = w;
+  queries.plClear.addEventListener('click', () => {
+    playlist = [];
+    localStorage.setItem(PL_KEY, JSON.stringify(playlist));
+    renderPL();
+    updatePlBar();
+    flashTitle('🗑 Playlist vaciada');
+  });
+
+  queries.fileImport.addEventListener('change', e => {
+    const f = e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => applyImport(r.result);
+    r.readAsText(f);
+    e.target.value = '';
+  });
+
+  const PL_KEY = 'mixcasete_playlist_v1';
+  let playlist = [];
+  try { playlist = JSON.parse(localStorage.getItem(PL_KEY)) || []; } catch (e) { playlist = []; }
+
+  function updatePlBar() {
+    document.getElementById('plBarText').textContent = '📼 PLAYLIST · ' + playlist.length + (playlist.length === 1 ? ' TEMA' : ' TEMAS');
+    document.getElementById('plCount').textContent = playlist.length;
   }
-});
-audio.addEventListener('ended', autoNext);
-audio.addEventListener('error', () => {
-  debug('Audio error: ' + (audio.error ? audio.error.code : '?'));
-  if (mode === 'stream' && audio.src.indexOf('file://') === 0) {
-    const item = playlist.find(t => t.id === current.id);
-    if (item && item.local) {
-      delete item.local;
+
+  function renderPL() {
+    const plList = document.getElementById('plList');
+    if (!playlist.length) {
+      plList.innerHTML = '<div class="result-status">Playlist vacía.<br>Pon música y pulsa ● REC para grabar y descargar temas 🎙️</div>';
+      return;
+    }
+    plList.innerHTML = '';
+    playlist.forEach((t, i) => {
+      const div = document.createElement('div');
+      div.className = 'pl-item' + (t.id === current.id ? ' current' : '');
+      div.dataset.idx = i;
+      div.innerHTML = '<img src="' + (t.thumb || ('https://i.ytimg.com/vi/' + t.id + '/hqdefault.jpg')) + '">' +
+        '<div class="pl-info"><div class="pl-title">' + t.title + (t.local ? ' 💾' : '') + '</div>' +
+        '<div class="pl-author">' + (t.author || 'Mix.Casete') + '</div></div>' +
+        '<div class="pl-actions"><button class="pl-btn play" data-play="' + i + '">▶</button><button class="pl-btn del" data-del="' + i + '">✕</button></div>';
+      plList.appendChild(div);
+    });
+  }
+
+  function playlistJson() {
+    return JSON.stringify(playlist, null, 2);
+  }
+
+  function savePL() {
+    localStorage.setItem(PL_KEY, JSON.stringify(playlist));
+    updatePlBar();
+    renderPL();
+  }
+
+  window.onPlaylistImported = text => applyImport(text);
+  window.onExported = ok => flashTitle(ok ? '⬆ Guardada en Descargas ✔' : '⚠ No se pudo exportar');
+
+  function applyImport(text) {
+    try {
+      const data = JSON.parse(text);
+      if (!Array.isArray(data)) throw new Error('No array');
+      const clean = data.filter(Boolean).map(t => ({ id: t.id || '', title: t.title || 'Sin título', author: t.author || '', thumb: t.thumb || '', local: t.local || '' }));
+      if (!clean.length) { flashTitle('⚠ Archivo sin temas'); return; }
+      playlist = clean;
       savePL();
-      flashTitle('⚠ Archivo dañado: regrábalo con REC');
+      flashTitle('📼 Playlist importada (' + clean.length + ' temas)');
+    } catch (e) { flashTitle('⚠ Archivo no válido'); }
+  }
+
+  document.getElementById('searchStrip').addEventListener('click', () => {
+    searchOverlay.classList.add('open');
+  });
+
+  document.getElementById('searchGo').addEventListener('click', () => {
+    const q = document.getElementById('searchInput').value.trim();
+    if (!q) return;
+    searchYouTube(q);
+  });
+
+  document.getElementById('urlGo').addEventListener('click', () => {
+    const q = document.getElementById('urlInput').value.trim();
+    if (!q) return;
+    const id = parseYouTubeId(q);
+    if (!id) { flashTitle('⚠ URL inválida'); return; }
+    playById(id, 'Tema directo', '', '');
+  });
+
+  function parseYouTubeId(s) {
+    const m = /(?:v=|youtu\.be\/)([A-Za-z0-9_-]{11})/.exec(s);
+    return m ? m[1] : null;
+  }
+
+  function searchYouTube(q) {
+    // placeholder: no-op intentionally; app uses native directly
+  }
+
+  function openPlaylist() {
+    plOverlay.classList.add('open');
+  }
+
+  document.getElementById('playlistBar').addEventListener('click', openPlaylist);
+  document.getElementById('searchOverlay').addEventListener('click', e => {
+    if (e.target.id === 'searchOverlay') searchOverlay.classList.remove('open');
+  });
+  document.getElementById('plOverlay').addEventListener('click', e => {
+    if (e.target.id === 'plOverlay') plOverlay.classList.remove('open');
+  });
+  document.getElementById('infoOverlay').addEventListener('click', e => {
+    if (e.target.id === 'infoOverlay') infoOverlay.classList.remove('open');
+  });
+
+  const APP_ICON = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"%3E%3Crect width="64" height="64" rx="12" fill="%23f7a929"/%3E%3Cpath d="M18 18h28v28H18z" fill="%23fff" opacity=".15"/%3E%3Ccircle cx="32" cy="32" r="18" fill="%23fff" opacity=".85"/%3E%3Cpath d="M28 24l14 8-14 8z" fill="%23f7a929"/%3E%3C/svg%3E';
+  coverImg.src = APP_ICON;
+  tvCoverImg.src = APP_ICON;
+
+  let current = { id: null, title: '', author: '', thumb: '' };
+  let playToken = 0;
+  let mode = 'none';
+  let audioPromise = null;
+  let lastSeek = 0;
+  let flashTimer = null;
+
+  function setLed(kind) {
+    modeLed.className = 'led';
+    if (kind) modeLed.classList.add(kind);
+  }
+
+  function setReels(on) {
+    reelLeft.classList.toggle('playing', !!on);
+    reelRight.classList.toggle('playing', !!on);
+    if (tvReelLeft) tvReelLeft.classList.toggle('playing', !!on);
+    if (tvReelRight) tvReelRight.classList.toggle('playing', !!on);
+  }
+
+  function playById(id, title, thumb, author) {
+    if (!id) return;
+    current = { id, title: title || 'Sin título', author: author || '', thumb: thumb || '' };
+    coverImg.src = thumb || ('https://i.ytimg.com/vi/' + id + '/hqdefault.jpg');
+    if (tvCoverImg) tvCoverImg.src = coverImg.src;
+    showTitle(current.title);
+    if (title && title !== 'Sin título') setRealTitle(title);
+    mode = 'native';
+    setLed('native');
+    if (typeof Android !== 'undefined' && Android.nativePlay) {
+      try { Android.nativePlay(id, current.title); } catch (e) { addError('Native play fail: ' + e.message); }
+    }
+    updateTvStatusFromMode();
+  }
+
+  function updateTvStatusFromMode() {
+    const s = document.getElementById('tvStatus');
+    if (!s) return;
+    if (mode === 'native') {
+      s.innerHTML = '<span class="dot"></span>' + (isPlayingNow() ? 'REPRODUCIENDO' : 'PAUSADO');
+      s.classList.toggle('paused', !isPlayingNow());
+      s.classList.remove('stopped');
+    } else if (mode === 'stream') {
+      s.innerHTML = '<span class="dot"></span>' + (isPlayingNow() ? 'REPRODUCIENDO' : 'PAUSADO');
+      s.classList.toggle('paused', !isPlayingNow());
+      s.classList.remove('stopped');
+    } else {
+      s.innerHTML = '<span class="dot"></span>DETENIDO';
+      s.classList.remove('paused');
+      s.classList.add('stopped');
     }
   }
-});
 
-soundFab.onclick = () => {
-  if (mode === 'native') { try { Android.nativeResume(); } catch (e) {} startNativeClock(); setReels(true); }
-  else if (mode === 'bridge') { try { Android.unmuteYT(); Android.resumeYT(); } catch (e) {} setReels(true); }
-  else if (mode === 'stream') { audio.play().catch(() => {}); }
-  soundFab.classList.remove('show');
-};
+  function isPlayingNow() {
+    return mode === 'native' ? !!document.body.dataset.nativePlaying : false;
+  }
 
-/* ============ OVERLAY BÚSQUEDA ============ */
-const overlay = document.getElementById('searchOverlay');
-document.getElementById('searchOpen').onclick = () => overlay.classList.add('open');
-overlay.onclick = e => { if (e.target === overlay) overlay.classList.remove('open'); };
-function closeSearch() { overlay.classList.remove('open'); }
-document.getElementById('searchGo').onclick = () => {
-  const q = document.getElementById('searchInput').value.trim();
-  if (q) searchMusic(q);
-};
-document.getElementById('searchInput').addEventListener('keypress', e => {
-  if (e.key === 'Enter') { const q = e.target.value.trim(); if (q) searchMusic(q); }
-});
-document.getElementById('urlGo').onclick = () => {
-  const id = extractVideoId(document.getElementById('urlInput').value);
-  if (!id) { alert('Enlace no válido 😕'); return; }
-  closeSearch();
-  playById(id, 'YouTube · ' + id, null, '');
-};
-document.getElementById('urlInput').addEventListener('keypress', e => {
-  if (e.key === 'Enter') document.getElementById('urlGo').click();
-});
+  document.querySelectorAll('.piano-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const a = btn.dataset.action;
+      if (a === 'record') { recToPlaylist(); }
+      else if (a === 'search') { searchOverlay.classList.add('open'); }
+      else if (a === 'play') { doPlay(); }
+      else if (a === 'pause') { doPause(); }
+      else if (a === 'stop') { doStop(); }
+      if (navigator.vibrate) navigator.vibrate(25);
+    });
+  });
 
-/* ============ INIT ============ */
-updatePlBar();
-renderPL();
-if (HAS_BRIDGE && !playlist.length) {
-  try { Android.loadPlaylistBackup(); } catch (e) {}
-}
-debug('Listo · ' + (HAS_BRIDGE ? 'Android + Bridge' : (IS_ANDROID ? 'Android' : 'Desktop')));
+  function recToPlaylist() {
+    if (!current.id || !current.title) { flashTitle('⚠️ Nada sonando para grabar'); return; }
+    if (playlist.some(t => t.id === current.id)) {
+      document.getElementById('plRecDot').classList.add('on');
+      setTimeout(() => document.getElementById('plRecDot').classList.remove('on'), 900);
+      flashTitle('● Ya está en la playlist');
+      return;
+    }
+    playlist.push({ ...current });
+    savePL();
+    document.getElementById('plRecDot').classList.add('on');
+    setTimeout(() => document.getElementById('plRecDot').classList.remove('on'), 1400);
+    flashTitle('● REC → tema guardado ✔');
+  }
+
+  function doPlay() {
+    if (!current.id) return;
+    if (typeof Android !== 'undefined' && Android.nativeResume) {
+      try { Android.nativeResume(); } catch (e) { addError('Resume fail: ' + e.message); }
+    }
+    document.body.dataset.nativePlaying = 'true';
+    setReels(true);
+    updateTvStatusFromMode();
+  }
+
+  function doPause() {
+    if (typeof Android !== 'undefined' && Android.nativePause) {
+      try { Android.nativePause(); } catch (e) { addError('Pause fail: ' + e.message); }
+    }
+    document.body.dataset.nativePlaying = 'false';
+    setReels(false);
+    updateTvStatusFromMode();
+  }
+
+  function doStop() {
+    if (typeof Android !== 'undefined' && Android.nativeStop) {
+      try { Android.nativeStop(); } catch (e) { addError('Stop fail: ' + e.message); }
+    }
+    document.body.dataset.nativePlaying = 'false';
+    setReels(false);
+    updateTvStatusFromMode();
+  }
+
+  renderPL();
+  updatePlBar();
 </script>
-
 </body>
 </html>
