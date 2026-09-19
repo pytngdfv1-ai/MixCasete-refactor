@@ -6,9 +6,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.media.MediaMetadata;
-import android.media.MediaPlayer;
 import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 import android.os.Build;
@@ -47,6 +45,7 @@ public class PlaybackService extends Service {
     private MediaSession mediaSession;
     private String currentTitle = "Mix.Casete";
     private String currentArtist = "";
+    private String currentUrl = "";
 
     public static void start(android.content.Context c, Intent i) {
         if (Build.VERSION.SDK_INT >= 26) c.startForegroundService(i);
@@ -102,13 +101,27 @@ public class PlaybackService extends Service {
             }
 
             @Override public void onPlayerError(PlaybackException error) {
-                Log.e(TAG, "ExoPlayer error: " +
-                        (error == null ? "unknown" : error.getErrorCodeName()), error);
+                String code = error == null ? "unknown" : error.getErrorCodeName();
+                String message = error == null ? "unknown" : String.valueOf(error.getMessage());
+                String cause = error == null || error.getCause() == null
+                        ? "none" : error.getCause().getClass().getSimpleName() + ": " + error.getCause().getMessage();
+                Log.e(TAG, "Audio error track='" + currentTitle + "' code=" + code
+                        + " message=" + message + " cause=" + cause
+                        + " url=" + redactUrl(currentUrl), error);
                 releaseWakeLock();
                 updateNotif(false);
+                // Keep the public event stable for the current JavaScript UI.
                 notifyJs("error");
             }
         });
+    }
+
+    private String redactUrl(String url) {
+        if (url == null || url.isEmpty()) return "empty";
+        try {
+            android.net.Uri u = android.net.Uri.parse(url);
+            return u.getScheme() + "://" + u.getHost() + (u.getPath() == null ? "" : u.getPath());
+        } catch (Exception e) { return "invalid"; }
     }
 
     private void setupMediaSession() {
@@ -119,9 +132,7 @@ public class PlaybackService extends Service {
             @Override public void onPlay() { doCmd("play"); }
             @Override public void onPause() { doCmd("pause"); }
             @Override public void onStop() { doCmd("stop"); }
-            @Override public void onSeekTo(long pos) {
-                if (player != null) player.seekTo(pos);
-            }
+            @Override public void onSeekTo(long pos) { if (player != null) player.seekTo(pos); }
             @Override public boolean onMediaButtonEvent(Intent intent) {
                 KeyEvent ev = intent.getParcelableExtra(Intent.EXTRA_KEY_EVENT);
                 if (ev != null && ev.getAction() == KeyEvent.ACTION_DOWN) {
@@ -158,37 +169,31 @@ public class PlaybackService extends Service {
                 currentArtist = intent.getStringExtra(EXTRA_ARTIST);
                 startPlayback(url);
                 break;
-            case "play":
-                if (player != null) { player.play(); acquireWakeLock(); }
-                break;
-            case "pause":
-                if (player != null) player.pause();
-                releaseWakeLock();
-                break;
+            case "play": if (player != null) { player.play(); acquireWakeLock(); } break;
+            case "pause": if (player != null) player.pause(); releaseWakeLock(); break;
             case "stop": stopPlayback(); stopSelf(); break;
-            case "seek":
-                if (player != null) player.seekTo(Math.max(0, intent.getIntExtra(EXTRA_SEEK, 0) * 1000L));
-                break;
+            case "seek": if (player != null) player.seekTo(Math.max(0, intent.getIntExtra(EXTRA_SEEK, 0) * 1000L)); break;
         }
         return START_STICKY;
     }
 
     private void startPlayback(String url) {
         if (player == null || url == null || url.trim().isEmpty()) {
-            Log.e(TAG, "URL de audio vacía");
+            Log.e(TAG, "Audio URL empty for track='" + currentTitle + "'");
             notifyJs("error");
             return;
         }
         try {
+            currentUrl = url;
             acquireWakeLock();
             updateMetadata();
             player.stop();
             player.setMediaItem(MediaItem.fromUri(url));
             player.prepare();
             player.play();
-            Log.d(TAG, "Reproducción iniciada: " + url.substring(0, Math.min(120, url.length())));
+            Log.d(TAG, "Playback requested track='" + currentTitle + "' url=" + redactUrl(url));
         } catch (Exception e) {
-            Log.e(TAG, "No se pudo iniciar la reproducción", e);
+            Log.e(TAG, "Playback start failed track='" + currentTitle + "'", e);
             releaseWakeLock();
             notifyJs("error");
         }
@@ -209,9 +214,7 @@ public class PlaybackService extends Service {
         if (!wl.isHeld()) wl.acquire(4 * 60 * 60 * 1000L);
     }
 
-    private void releaseWakeLock() {
-        if (wl != null && wl.isHeld()) wl.release();
-    }
+    private void releaseWakeLock() { if (wl != null && wl.isHeld()) wl.release(); }
 
     private void updateMetadata() {
         if (mediaSession == null) return;
@@ -263,7 +266,7 @@ public class PlaybackService extends Service {
 
     private void updateNotif(boolean playing) {
         try { ((NotificationManager) getSystemService(NOTIFICATION_SERVICE)).notify(1, buildNotif(currentTitle, playing)); }
-        catch (Exception e) { Log.e(TAG, "No se pudo actualizar notificación", e); }
+        catch (Exception e) { Log.e(TAG, "Notification update failed", e); }
     }
 
     private void crearCanal() {
@@ -280,10 +283,7 @@ public class PlaybackService extends Service {
             MainActivity.self.get().onPlayerEvent(event);
     }
 
-    @Override public void onTaskRemoved(Intent rootIntent) {
-        // El servicio continúa reproduciendo aunque el usuario quite la app de recientes.
-        super.onTaskRemoved(rootIntent);
-    }
+    @Override public void onTaskRemoved(Intent rootIntent) { super.onTaskRemoved(rootIntent); }
 
     @Override public void onDestroy() {
         stopPlayback();
